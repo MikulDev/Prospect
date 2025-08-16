@@ -19,6 +19,17 @@
         android:theme="@style/app_theme">
 
         <!-- FileProvider for file operations -->
+        <activity
+            android:name="com.momosoftworks.prospect.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- FileProvider for file operations -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.momosoftworks.prospect.fileprovider"
