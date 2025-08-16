@@ -4,5 +4,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-include 'common', 'desktop', 'android'
 rootProject.name = "Prospect"

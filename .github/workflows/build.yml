@@ -1,0 +1,80 @@
+name: Build GluonFX App
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and Setup GraalVM
+        run: |
+          wget -q https://github.com/gluonhq/graal/releases/download/gluon-22.1.0.1-Final/graalvm-svm-java17-linux-gluon-22.1.0.1-Final.tar.gz
+          tar -xzf graalvm-svm-java17-linux-gluon-22.1.0.1-Final.tar.gz
+          echo "GRAALVM_HOME=$PWD/graalvm-svm-java17-linux-gluon-22.1.0.1-Final" >> $GITHUB_ENV
+          echo "JAVA_HOME=$PWD/graalvm-svm-java17-linux-gluon-22.1.0.1-Final" >> $GITHUB_ENV
+          echo "$PWD/graalvm-svm-java17-linux-gluon-22.1.0.1-Final/bin" >> $GITHUB_PATH
+
+      - name: Setup Maven 3.8.8
+        run: |
+          wget -q https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+          tar -xzf apache-maven-3.8.8-bin.tar.gz
+          echo "$PWD/apache-maven-3.8.8/bin" >> $GITHUB_PATH
+
+      - name: Verify Setup
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"
+          echo "GRAALVM_HOME=$GRAALVM_HOME"
+          java -version
+          mvn --version
+          native-image --version
+
+      - name: Install required libraries for Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libfreetype6-dev libgl-dev libglib2.0-dev libglib2.0-dev libgtk-3-dev libpango1.0-dev libx11-dev libxtst-dev
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 35
+          build-tools: 35.0.0
+          ndk: 23.1.7779620
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build Desktop Native
+        run: |
+          mvn clean compile
+          mvn gluonfx:build
+
+      - name: Build Android APK
+        run: |
+          mvn -Pandroid clean gluonfx:build gluonfx:package
+        env:
+          ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
+        continue-on-error: true
+
+      - name: Upload Desktop Build
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: desktop-linux-x64
+          path: target/gluonfx/x86_64-linux/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: android-apk
+          path: target/gluonfx/aarch64-android/gvm/*.apk
+          retention-days: 30
+          if-no-files-found: ignore
