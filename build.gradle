@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
-    id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.22'
+    id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.25'
 }
 
 repositories {
@@ -25,10 +25,6 @@ dependencies {
 
     // JSON processing
     implementation 'org.glassfish:javax.json:1.1.4'
-
-    // Testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.4'
 }
 
 javafx {
