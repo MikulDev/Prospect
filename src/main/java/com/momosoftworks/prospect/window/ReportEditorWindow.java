@@ -7,24 +7,17 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.TextField;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.render.PDFRenderer;
 import com.momosoftworks.prospect.report.Report;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import org.apache.pdfbox.pdmodel.PDDocument;
 
-import java.awt.*;
-import java.io.File;
 import java.util.Optional;
 
 public class ReportEditorWindow extends View {
