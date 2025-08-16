@@ -61,6 +61,7 @@ gluonfx {
     bundlesList = ["com.momosoftworks.prospect.resources.prospect"]
 
     runtimeArgs = [
+            '--allow-incomplete-classpath',
             '-Dcom.sun.javafx.scene.text.subpixel-text=true',
             '--native-image-info',
             '--features=org.graalvm.polyglot.HostAccessFeature',
