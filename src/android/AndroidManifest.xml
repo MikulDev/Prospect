@@ -20,7 +20,7 @@
 
         <!-- FileProvider for file operations -->
         <activity
-            android:name="com.momosoftworks.prospect.MainActivity"
+            android:name="javafxports.android.FXActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
