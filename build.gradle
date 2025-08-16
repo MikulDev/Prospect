@@ -58,16 +58,7 @@ gluonfx {
             "com.momosoftworks.prospect.report.template.element.TextFieldTemplate"
     ]
 
-    bundlesList = ["com.momosoftworks.prospect.resources.prospect"]
-
-    runtimeArgs = [
-            '--allow-incomplete-classpath',
-            '-Dcom.sun.javafx.scene.text.subpixel-text=true',
-            '--native-image-info',
-            '--features=org.graalvm.polyglot.HostAccessFeature',
-            '--verbose',
-            '--no-fallback'
-    ]
+    bundlesList = ["com.momosoftworks.prospect.resources.prospect", "fontmanager"]
 }
 
 ext {
