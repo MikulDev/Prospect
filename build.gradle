@@ -67,6 +67,20 @@ gluonfx {
     bundlesList = ["com.momosoftworks.prospect.resources.prospect"]
 }
 
+ext {
+    manifest = file('src/android/AndroidManifest.xml')
+    compileSdkVersion = '35'
+    minSdkVersion = '26'
+    targetSdkVersion = '35'
+
+    // Permissions for camera and storage support
+    permissions = [
+            'android.permission.CAMERA',
+            'android.permission.WRITE_EXTERNAL_STORAGE',
+            'android.permission.READ_EXTERNAL_STORAGE'
+    ]
+}
+
 application {
     mainClass = "com.momosoftworks.prospect.ProspectApplication"
     mainClassName = "com.momosoftworks.prospect.ProspectApplication"
