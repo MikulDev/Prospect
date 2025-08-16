@@ -51,6 +51,7 @@ java {
 
 gluonfx {
     target = project.hasProperty("target") ? project.getProperty("target") : 'host'
+    appIdentifier = 'com.momosoftworks.prospect'
 
     attachConfig {
         version = '4.0.23'
@@ -73,7 +74,6 @@ ext {
     minSdkVersion = '26'
     targetSdkVersion = '35'
 
-    applicationId = 'com.momosoftworks.prospect'
     namespace = 'com.momosoftworks.prospect'
 
     // Permissions for camera and storage support
