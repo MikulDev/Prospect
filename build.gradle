@@ -73,6 +73,8 @@ ext {
     minSdkVersion = '26'
     targetSdkVersion = '35'
 
+    namespace = 'com.momosoftworks.prospect'
+
     // Permissions for camera and storage support
     permissions = [
             'android.permission.CAMERA',
