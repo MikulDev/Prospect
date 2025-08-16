@@ -49,14 +49,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: List available Gradle tasks
+        run: ./gradlew tasks --group="gluonfx"
+
       - name: Build Desktop Native
         run: |
           ./gradlew clean build
-          ./gradlew gluonfxBuild
+          ./gradlew nativeBuild
 
       - name: Build Android APK
         run: |
-          ./gradlew clean gluonfxBuild gluonfxPackage -Ptarget=android
+          ./gradlew clean nativeBuild nativePackage -Ptarget=android
         env:
           ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
         continue-on-error: true
