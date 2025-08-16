@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme -->
-    <style name="app_theme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here -->
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowContentOverlay">@null</item>
+    <!-- Base application theme using built-in Android theme -->
+    <style name="app_theme" parent="android:Theme.NoTitleBar.Fullscreen">
+        <!-- This is a basic Android theme that should always be available -->
     </style>
 </resources>
