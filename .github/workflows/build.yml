@@ -64,6 +64,15 @@ jobs:
           ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
         continue-on-error: true
 
+      - name: Upload Gluon logs on failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: gluon-build-logs
+          path: |
+            build/gluonfx/log/*.log
+            build/gluonfx/log/**/*.log
+          retention-days: 30
+
       - name: Upload Desktop Build
         uses: actions/upload-artifact@v4
         if: success()
