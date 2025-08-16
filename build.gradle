@@ -65,32 +65,9 @@ gluonfx {
     ]
 
     bundlesList = ["com.momosoftworks.prospect.resources.prospect"]
-
-    // iOS Configuration
-    /*ios {
-        infoPList = file('src/ios/Default-Info.plist')
-        forceLinkClasses = [
-                'com.momosoftworks.prospect.**.*',
-                'com.gluonhq.**.*'
-        ]
-    }*/
-
-    // Android Configuration
-    /*installAndroid {
-        manifest = file('src/android/AndroidManifest.xml')
-        compileSdkVersion = '33'
-        minSdkVersion = '26'
-        targetSdkVersion = '33'
-
-        // Permissions for future camera support
-        permissions = [
-                'android.permission.CAMERA',
-                'android.permission.WRITE_EXTERNAL_STORAGE',
-                'android.permission.READ_EXTERNAL_STORAGE'
-        ]
-    }*/
 }
 
 application {
-    mainClass.set("com.momosoftworks.prospect.ProspectApplication")
+    mainClass = "com.momosoftworks.prospect.ProspectApplication"
+    mainClassName = "com.momosoftworks.prospect.ProspectApplication"
 }
