@@ -10,6 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import javax.json.*;
 import java.util.ArrayList;
@@ -73,9 +74,11 @@ public class SectionTemplate extends AbstractElementTemplate
         Button addButton = new Button("+");
         addButton.setOnAction(event ->
         {
-            TemplateEditorWindow.showCreateElementDialog(template ->
+            Pane dialog = TemplateEditorWindow.showCreateElementDialog((template, d) ->
             {   this.addElement(template, contentBox, false);
+                contentBox.getChildren().remove(d);
             });
+            contentBox.getChildren().add(dialog);
         });
         contentBox.getChildren().add(addButton);
         mainNode.getChildren().add(contentBox);

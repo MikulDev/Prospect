@@ -24,7 +24,7 @@ public class PDFRenderer
     private static final float CONTENT_WIDTH = PAGE_WIDTH - 2 * MARGIN;
     private static final float LINE_HEIGHT_MULTIPLIER = 1.2f;
 
-    public static void renderReport(Report report)
+    public static String renderReport(Report report)
     {
         try
         {
@@ -60,15 +60,18 @@ public class PDFRenderer
 
             // Ensure file exists
             String filename = String.format("Inspection Report - %s.pdf", report.getProperty());
-            String path = ProspectApplication.PDF_PATH.resolve(filename).toString();
-            ProspectApplication.PDF_PATH.toFile().mkdirs();
+            String path = ProspectApplication.getPdfPath().resolve(filename).toString();
+            ProspectApplication.getPdfPath().toFile().mkdirs();
 
             document.save(path);
             document.close();
+
+            return path;
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private static void renderItems(PDDocument document, List<RenderedItem> items) throws IOException
@@ -147,6 +150,7 @@ public class PDFRenderer
         // Handle text wrapping with newline preservation
         List<String> lines = wrapTextWithNewlines(text.getText(), font, fontSize, CONTENT_WIDTH);
 
+        float textWidth = 0;
         for (String line : lines)
         {
             contentStream.beginText();
@@ -155,10 +159,10 @@ public class PDFRenderer
             contentStream.endText();
 
             yPosition -= fontSize * LINE_HEIGHT_MULTIPLIER;
+            textWidth = Math.max(textWidth, font.getStringWidth(line) / 1000 * fontSize);
         }
 
         // Draw box around text
-        float textWidth = font.getStringWidth(text.getText()) / 1000 * fontSize;
         contentStream.setLineWidth(1);
         contentStream.moveTo(MARGIN, yPosition + fontSize * LINE_HEIGHT_MULTIPLIER);
         contentStream.lineTo(MARGIN + textWidth, yPosition + fontSize * LINE_HEIGHT_MULTIPLIER);

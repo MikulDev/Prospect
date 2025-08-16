@@ -1,9 +1,11 @@
 package com.momosoftworks.prospect.report;
 
+import com.gluonhq.charm.glisten.application.AppManager;
 import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.render.PDFRenderer;
 import com.momosoftworks.prospect.util.Conversions;
 import com.momosoftworks.prospect.window.ReportEditorWindow;
+import com.momosoftworks.prospect.window.TemplateEditorWindow;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -51,8 +53,7 @@ public class ReportElement
         // Create buttons
         Button editButton = new Button("Edit");
         editButton.setOnAction(e -> {
-            ReportEditorWindow editor = new ReportEditorWindow(report);
-            editor.show(this.stage, this.parentScene);
+            AppManager.getInstance().switchView(ProspectApplication.REPORT_EDITOR_VIEW).ifPresent(templateEditor -> ((ReportEditorWindow) templateEditor).setReport(report));
         });
         
         Button viewButton = new Button("Export");

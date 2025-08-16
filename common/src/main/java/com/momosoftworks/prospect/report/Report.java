@@ -137,7 +137,7 @@ public class Report
         this.setModifiedDate(System.currentTimeMillis());
         this.saveListeners.forEach(Runnable::run);
         String file = this.getFileName() + ".json";
-        Path path = ProspectApplication.REPORT_PATH.resolve(file);
+        Path path = ProspectApplication.getReportPath().resolve(file);
         Serialization.writeJsonFile(this.serialize(), path);
     }
 }

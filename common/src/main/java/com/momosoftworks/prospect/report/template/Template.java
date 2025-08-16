@@ -119,7 +119,7 @@ public class Template
         if (!file.endsWith(".json"))
         {   file += ".json";
         }
-        Path path = ProspectApplication.TEMPLATE_PATH.resolve(file);
+        Path path = ProspectApplication.getTemplatePath().resolve(file);
         Serialization.writeJsonFile(this.serialize(), path);
     }
 }

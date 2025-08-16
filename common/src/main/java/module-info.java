@@ -3,7 +3,6 @@ module com.momosoftworks.prospect {
     requires javafx.fxml;
     requires java.json;
     requires java.desktop;
-    requires javafx.swing;
 
     // PDFBox 3.x module requirements
     requires org.apache.pdfbox;
@@ -11,6 +10,10 @@ module com.momosoftworks.prospect {
     requires org.apache.pdfbox.io;
     requires java.logging;
     requires org.apache.commons.logging;
+    requires com.gluonhq.charm.glisten;
+    requires com.gluonhq.attach.util;
+    requires com.gluonhq.attach.storage;
+    requires com.gluonhq.attach.pictures;
 
     exports com.momosoftworks.prospect;
     exports com.momosoftworks.prospect.window;

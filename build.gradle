@@ -1,0 +1,33 @@
+buildscript {
+    ext {
+        mainClassName = 'com.momosoftworks.prospect.ProspectApplication'
+        androidGradlePluginVersion = '8.0.0'
+        gluonfxPluginVersion = '1.0.24'
+        openjfxPluginVersion = '0.1.0'
+        javafxVersion = '21'
+        charmGlistenVersion = '6.2.3'
+        attachVersion = '4.0.23'
+        pdfboxVersion = '3.0.5'
+        jsonProcessingVersion = '1.1.4'
+        commonsLoggingVersion = '1.3.5'
+    }
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://nexus.gluonhq.com/nexus/content/repositories/releases' }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
+        classpath "com.gluonhq:gluonfx-gradle-plugin:$gluonfxPluginVersion"
+        classpath "org.openjfx:javafx-plugin:$openjfxPluginVersion"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://nexus.gluonhq.com/nexus/content/repositories/releases' }
+    }
+}

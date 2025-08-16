@@ -1,5 +1,6 @@
 package com.momosoftworks.prospect.report.template;
 
+import com.gluonhq.charm.glisten.application.AppManager;
 import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.util.Conversions;
 import com.momosoftworks.prospect.window.TemplateEditorWindow;
@@ -50,9 +51,7 @@ public class TemplateElement
         // Create buttons
         Button editButton = new Button("Edit");
         editButton.setOnAction(e -> {
-            ProspectApplication.MAIN_WINDOW.hide();
-            TemplateEditorWindow editor = new TemplateEditorWindow(template);
-            editor.show(stage, parentScene);
+            AppManager.getInstance().switchView(ProspectApplication.TEMPLATE_EDITOR_VIEW).ifPresent(templateEditor -> ((TemplateEditorWindow) templateEditor).setTemplate(template));
         });
 
         Button deleteButton = new Button("Delete");
