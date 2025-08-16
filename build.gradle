@@ -73,6 +73,7 @@ ext {
     minSdkVersion = '26'
     targetSdkVersion = '35'
 
+    applicationId = 'com.momosoftworks.prospect'
     namespace = 'com.momosoftworks.prospect'
 
     // Permissions for camera and storage support
