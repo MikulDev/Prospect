@@ -59,6 +59,14 @@ gluonfx {
     ]
 
     bundlesList = ["com.momosoftworks.prospect.resources.prospect"]
+
+    runtimeArgs = [
+            '-Dcom.sun.javafx.scene.text.subpixel-text=true',
+            '--native-image-info',
+            '--features=org.graalvm.polyglot.HostAccessFeature',
+            '--verbose',
+            '--no-fallback'
+    ]
 }
 
 ext {
