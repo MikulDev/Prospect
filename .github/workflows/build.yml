@@ -55,11 +55,11 @@ jobs:
       - name: Build Desktop Native
         run: |
           ./gradlew clean build
-          ./gradlew nativeBuild
+          ./gradlew nativeBuild --stacktrace
 
       - name: Build Android APK
         run: |
-          ./gradlew clean nativeBuild nativePackage -Ptarget=android
+          ./gradlew clean nativeBuild nativePackage -Ptarget=android --stacktrace
         env:
           ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
         continue-on-error: true
