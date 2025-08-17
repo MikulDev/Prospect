@@ -102,6 +102,14 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Setup MSBuild and Visual Studio Build Tools
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup Visual Studio Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Download and Setup GraalVM for Windows
         run: |
           Invoke-WebRequest -Uri https://github.com/gluonhq/graal/releases/download/gluon-22.1.0.1-Final/graalvm-svm-java17-windows-gluon-22.1.0.1-Final.zip -OutFile graalvm.zip
