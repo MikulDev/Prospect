@@ -81,7 +81,7 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-      - name: Upload Gluon logs on failure
+      - name: Upload Gluon logs
         uses: actions/upload-artifact@v4
         with:
           name: gluon-build-logs-linux
@@ -123,9 +123,8 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
-      - name: Upload Gluon logs on failure (Windows)
+      - name: Upload Gluon logs
         uses: actions/upload-artifact@v4
-        if: failure()
         with:
           name: gluon-build-logs-windows
           path: |
