@@ -19,14 +19,6 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Verify Setup
-        run: |
-          echo "JAVA_HOME=$JAVA_HOME"
-          echo "GRAALVM_HOME=$GRAALVM_HOME"
-          java -version
-          ./gradlew --version
-          native-image --version
-
       - name: Install required libraries for Linux
         run: |
           sudo apt-get update
@@ -44,8 +36,8 @@ jobs:
 
       - name: Build Desktop Native (Linux)
         run: |
-          ./gradlew clean build
-          ./gradlew nativeBuild --stacktrace
+          ./gradlew -Denv=production clean build
+          ./gradlew -Denv=production nativeBuild --stacktrace
 
       - name: Upload Desktop Build
         uses: actions/upload-artifact@v4
@@ -67,7 +59,7 @@ jobs:
         run: |
           unset ANDROID_SDK_ROOT
           export ANDROID_HOME="${{ steps.setup-android.outputs.sdk-path }}"
-          ./gradlew clean nativeBuild nativePackage -Ptarget=android --stacktrace
+          ./gradlew -Denv=production clean nativeBuild nativePackage -Ptarget=android --stacktrace
         env:
           ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
         continue-on-error: true
@@ -120,7 +112,7 @@ jobs:
           echo "$graalPath\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build Windows Native Executable
-        run: ./gradlew -b build-windows.gradle clean build nativeBuild --stacktrace
+        run: ./gradlew -b build-windows.gradle -Denv=production clean build nativeBuild --stacktrace
         continue-on-error: true
 
       - name: Prepare artifacts for upload

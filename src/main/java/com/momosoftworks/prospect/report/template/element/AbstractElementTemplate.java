@@ -30,6 +30,8 @@ public abstract class AbstractElementTemplate
         this.type = type;
     }
 
+    protected abstract Node getNodeInner();
+
     public Node getNode()
     {
         VBox container = new VBox(20);
@@ -46,8 +48,6 @@ public abstract class AbstractElementTemplate
         }
         return container;
     }
-
-    protected abstract Node getNodeInner();
 
     public String getName()
     {   return name;

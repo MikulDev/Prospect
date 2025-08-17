@@ -11,18 +11,28 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.report.Report;
 import com.momosoftworks.prospect.report.template.Template;
+import com.momosoftworks.prospect.util.FileTransferHelper;
 import com.momosoftworks.prospect.util.Serialization;
+import com.momosoftworks.prospect.util.FileTransferHelper.DeviceFile;
+import com.momosoftworks.prospect.util.FileTransferHelper.FileTransferException;
+import com.momosoftworks.prospect.util.FileTransferHelper.ImportType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.Node;
+import javafx.stage.FileChooser;
 import com.gluonhq.attach.util.Platform;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.function.Function;
 
 public class MainWindow {
 
@@ -31,14 +41,19 @@ public class MainWindow {
     private ListView<Template> templatesListView;
     private ObservableList<Report> reports;
     private ObservableList<Template> templates;
-    private VBox currentContent;
+    private FileTransferHelper fileTransferHelper;
 
     public MainWindow() {
+        this.fileTransferHelper = new FileTransferHelper();
+
         view = new View() {
             @Override
             protected void updateAppBar(AppBar appBar) {
                 appBar.setTitleText("Prospect");
-                appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshLists()));
+                appBar.getActionItems().addAll(
+                        MaterialDesignIcon.SYNC.button(e -> refreshDevices()),
+                        MaterialDesignIcon.REFRESH.button(e -> refreshLists())
+                );
             }
         };
 
@@ -46,22 +61,16 @@ public class MainWindow {
     }
 
     private void initializeView() {
-        // Load data
         loadData();
 
-        // Create main layout
         BorderPane mainLayout = new BorderPane();
 
-        // Create content based on platform
         if (Platform.isDesktop()) {
-            // Desktop: Side-by-side layout
             mainLayout.setCenter(createDesktopLayout());
         } else {
-            // Mobile: Bottom navigation
             mainLayout.setCenter(createMobileLayout());
         }
 
-        // Add floating action button for new items
         FloatingActionButton fab = new FloatingActionButton(
                 MaterialDesignIcon.ADD.text,
                 e -> showNewItemDialog()
@@ -76,11 +85,9 @@ public class MainWindow {
         splitLayout.setPadding(new Insets(10));
         splitLayout.setFillHeight(true);
 
-        // Reports section
         VBox reportsSection = createReportsSection();
         HBox.setHgrow(reportsSection, Priority.ALWAYS);
 
-        // Templates section
         VBox templatesSection = createTemplatesSection();
         HBox.setHgrow(templatesSection, Priority.ALWAYS);
 
@@ -90,40 +97,34 @@ public class MainWindow {
     }
 
     private Node createMobileLayout() {
-        // Create bottom navigation
         BottomNavigation bottomNav = new BottomNavigation();
 
-        // Reports tab
-        BottomNavigationButton reportsBtn = new BottomNavigationButton(
+        BottomNavigationButton reportsButton = new BottomNavigationButton(
                 "Reports",
                 MaterialDesignIcon.DESCRIPTION.graphic()
         );
 
-        // Templates tab
-        BottomNavigationButton templatesBtn = new BottomNavigationButton(
+        BottomNavigationButton templatesButton = new BottomNavigationButton(
                 "Templates",
                 MaterialDesignIcon.VIEW_MODULE.graphic()
         );
 
-        // Content container
         StackPane contentContainer = new StackPane();
 
-        // Handle tab selection
-        reportsBtn.setOnAction(e -> {
+        reportsButton.setOnAction(e -> {
             contentContainer.getChildren().clear();
-            contentContainer.getChildren().add(createReportsSection());
+            contentContainer.getChildren().add(this.createReportsSection());
         });
 
-        templatesBtn.setOnAction(e -> {
+        templatesButton.setOnAction(e -> {
             contentContainer.getChildren().clear();
-            contentContainer.getChildren().add(createTemplatesSection());
+            contentContainer.getChildren().add(this.createTemplatesSection());
         });
 
-        bottomNav.getActionItems().addAll(reportsBtn, templatesBtn);
+        bottomNav.getActionItems().addAll(reportsButton, templatesButton);
 
-        // Set initial content
-        contentContainer.getChildren().add(createReportsSection());
-        reportsBtn.setSelected(true);
+        contentContainer.getChildren().add(this.createReportsSection());
+        reportsButton.setSelected(true);
 
         BorderPane mobileLayout = new BorderPane();
         mobileLayout.setCenter(contentContainer);
@@ -132,72 +133,313 @@ public class MainWindow {
         return mobileLayout;
     }
 
-    private VBox createReportsSection() {
+    private <T> VBox createSection(String title,
+                              String newButtonText, MaterialDesignIcon newButtonIcon, Runnable newButtonAction,
+                              ImportType importType,
+                              Runnable importLocalAction, Runnable importDeviceAction, Runnable exportDeviceAction,
+                              ListView<T> listView, Function<T, Node> cardCreator) {
         VBox section = new VBox(10);
         section.setPadding(new Insets(10));
 
-        Label titleLabel = new Label("Reports");
+        Label titleLabel = new Label(title);
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        // Create list view
+        // New button
+        HBox newButtonRow = new HBox();
+        Button newBtn = createStyledButton(newButtonText, newButtonIcon);
+        newBtn.setOnAction(e -> newButtonAction.run());
+        newBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(newBtn, Priority.ALWAYS);
+        newButtonRow.getChildren().add(newBtn);
+
+        // Import/Export buttons
+        HBox importExportRow = new HBox(10);
+
+        Button importLocalBtn = createStyledButton("Import Local", MaterialDesignIcon.FOLDER_OPEN);
+        importLocalBtn.setOnAction(e -> importLocalAction.run());
+        importLocalBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(importLocalBtn, Priority.ALWAYS);
+
+        Button importFromDeviceBtn = createStyledButton("Import from Device", MaterialDesignIcon.CLOUD_DOWNLOAD);
+        importFromDeviceBtn.setOnAction(e -> importDeviceAction.run());
+        importFromDeviceBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(importFromDeviceBtn, Priority.ALWAYS);
+
+        Button exportToDeviceBtn = createStyledButton("Export to Device", MaterialDesignIcon.CLOUD_UPLOAD);
+        exportToDeviceBtn.setOnAction(e -> exportDeviceAction.run());
+        exportToDeviceBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(exportToDeviceBtn, Priority.ALWAYS);
+
+        importExportRow.getChildren().addAll(importLocalBtn, importFromDeviceBtn, exportToDeviceBtn);
+
+        // Configure ListView
+        listView.setCellFactory(lv -> new ListCell<T>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(cardCreator.apply(item));
+                }
+            }
+        });
+        VBox.setVgrow(listView, Priority.ALWAYS);
+
+        section.getChildren().addAll(titleLabel, newButtonRow, importExportRow, listView);
+        return section;
+    }
+
+    // Simplified Reports section using the generic method
+    private VBox createReportsSection() {
         reportsListView = new ListView<>(reports);
-        reportsListView.setCellFactory(lv -> new ListCell<Report>() {
+
+        return createSection(
+            "Reports",
+            "New Report", MaterialDesignIcon.ADD, () -> showTemplateSelectionDialog(),
+            ImportType.REPORT,
+            () -> browseForFile(ImportType.REPORT),
+            () -> showDeviceImportDialog(ImportType.REPORT),
+            () -> showDeviceExportDialog(ImportType.REPORT),
+            reportsListView,
+            this::createReportCard
+        );
+    }
+
+    // Simplified Templates section using the generic method
+    private VBox createTemplatesSection() {
+        templatesListView = new ListView<>(templates);
+
+        return createSection(
+            "Templates",
+            "New Template", MaterialDesignIcon.ADD, () -> createNewTemplate(),
+            ImportType.TEMPLATE,
+            () -> browseForFile(ImportType.TEMPLATE),
+            () -> showDeviceImportDialog(ImportType.TEMPLATE),
+            () -> showDeviceExportDialog(ImportType.TEMPLATE),
+            templatesListView,
+            this::createTemplateCard
+        );
+    }
+
+    private Button createStyledButton(String text, MaterialDesignIcon icon) {
+        Button button = new Button(text);
+        button.setGraphic(icon.graphic());
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setPrefHeight(40);
+        return button;
+    }
+
+    // File Operations
+    private void browseForFile(ImportType type) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select " + (type == ImportType.REPORT ? "Report" : "Template") + " File");
+
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
+                (type == ImportType.REPORT ? "Report" : "Template") + " files (*.json)", "*.json"
+        );
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        File selectedFile = fileChooser.showOpenDialog(view.getScene().getWindow());
+
+        if (selectedFile != null) {
+            try {
+                fileTransferHelper.importLocalFile(selectedFile, type);
+                showSuccessAlert("File imported successfully!");
+                refreshLists();
+            } catch (IOException e) {
+                showErrorAlert("Failed to import file: " + e.getMessage());
+            }
+        }
+    }
+
+    private void showDeviceImportDialog(ImportType type) {
+        try {
+            List<String> connectedDevices = fileTransferHelper.getConnectedDevicesWithProspectApp();
+
+            if (connectedDevices.isEmpty()) {
+                showInfoAlert("No Devices Found",
+                              "No connected devices with the Prospect app found. Please ensure your device is connected via USB and the Prospect app is installed.");
+                return;
+            }
+
+            // Show device selection dialog
+            Optional<String> selectedDevice = showDeviceSelectionDialog(connectedDevices, "Import from Device");
+            if (!selectedDevice.isPresent()) return;
+
+            // Show file selection dialog
+            List<DeviceFile> deviceFiles = fileTransferHelper.getDeviceFiles(selectedDevice.get(), type);
+
+            if (deviceFiles.isEmpty()) {
+                showInfoAlert("No Files Found",
+                              "No " + (type == ImportType.REPORT ? "report" : "template") + " files found on the selected device.");
+                return;
+            }
+
+            Optional<DeviceFile> selectedFile = showDeviceFileSelectionDialog(deviceFiles, type);
+            if (!selectedFile.isPresent()) return;
+
+            // Import the file
+            fileTransferHelper.importFileFromDevice(selectedDevice.get(), selectedFile.get().path(), type);
+            showSuccessAlert("File imported successfully from device!");
+            refreshLists();
+
+        } catch (FileTransferException e) {
+            showErrorAlert("Failed to import from device: " + e.getMessage());
+        }
+    }
+
+    private void showDeviceExportDialog(ImportType type) {
+        try {
+            List<String> connectedDevices = fileTransferHelper.getConnectedDevicesWithProspectApp();
+
+            if (connectedDevices.isEmpty()) {
+                showInfoAlert("No Devices Found",
+                              "No connected devices with the Prospect app found. Please ensure your device is connected via USB and the Prospect app is installed.");
+                return;
+            }
+
+            // Show device selection dialog
+            Optional<String> selectedDevice = showDeviceSelectionDialog(connectedDevices, "Export to Device");
+            if (!selectedDevice.isPresent()) return;
+
+            // Show item selection dialog
+            if (type == ImportType.REPORT) {
+                showReportExportSelectionDialog(selectedDevice.get());
+            } else {
+                showTemplateExportSelectionDialog(selectedDevice.get());
+            }
+
+        } catch (FileTransferException e) {
+            showErrorAlert("Failed to export to device: " + e.getMessage());
+        }
+    }
+
+    private Optional<String> showDeviceSelectionDialog(List<String> devices, String title) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText("Select a connected device:");
+
+        ListView<String> deviceList = new ListView<>(FXCollections.observableArrayList(devices));
+        dialog.getDialogPane().setContent(deviceList);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                return deviceList.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+
+        return dialog.showAndWait();
+    }
+
+    private Optional<DeviceFile> showDeviceFileSelectionDialog(List<DeviceFile> files, ImportType type) {
+        Dialog<DeviceFile> dialog = new Dialog<>();
+        dialog.setTitle("Select File from Device");
+        dialog.setHeaderText("Choose a " + (type == ImportType.REPORT ? "report" : "template") + " file:");
+
+        ListView<DeviceFile> fileList = new ListView<>(FXCollections.observableArrayList(files));
+        dialog.getDialogPane().setContent(fileList);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                return fileList.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+
+        return dialog.showAndWait();
+    }
+
+    private void showReportExportSelectionDialog(String deviceName) {
+        Dialog<List<Report>> dialog = new Dialog<>();
+        dialog.setTitle("Export Reports to Device");
+        dialog.setHeaderText("Select reports to export:");
+
+        ListView<Report> reportList = new ListView<>(reports);
+        reportList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        reportList.setCellFactory(lv -> new ListCell<Report>() {
             @Override
             protected void updateItem(Report report, boolean empty) {
                 super.updateItem(report, empty);
-                if (empty || report == null) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(createReportCard(report));
-                }
+                setText(empty || report == null ? null :
+                        (report.getFileName() != null ? report.getFileName() : "Untitled Report"));
             }
         });
-        VBox.setVgrow(reportsListView, Priority.ALWAYS);
 
-        // Add new report button
-        Button newReportBtn = new Button("New Report");
-        newReportBtn.setGraphic(MaterialDesignIcon.ADD.graphic());
-        newReportBtn.setMaxWidth(Double.MAX_VALUE);
-        newReportBtn.setOnAction(e -> showTemplateSelectionDialog());
+        VBox content = new VBox(10);
+        content.getChildren().addAll(
+                new Label("Hold Ctrl/Cmd to select multiple reports:"),
+                reportList
+        );
 
-        section.getChildren().addAll(titleLabel, newReportBtn, reportsListView);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        return section;
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                return new ArrayList<>(reportList.getSelectionModel().getSelectedItems());
+            }
+            return null;
+        });
+
+        Optional<List<Report>> result = dialog.showAndWait();
+        if (result.isPresent() && !result.get().isEmpty()) {
+            try {
+                fileTransferHelper.exportReportsToDevice(deviceName, result.get());
+                showSuccessAlert("Reports exported successfully to device!");
+            } catch (FileTransferException e) {
+                showErrorAlert("Failed to export reports: " + e.getMessage());
+            }
+        }
     }
 
-    private VBox createTemplatesSection() {
-        VBox section = new VBox(10);
-        section.setPadding(new Insets(10));
+    private void showTemplateExportSelectionDialog(String deviceName) {
+        Dialog<List<Template>> dialog = new Dialog<>();
+        dialog.setTitle("Export Templates to Device");
+        dialog.setHeaderText("Select templates to export:");
 
-        Label titleLabel = new Label("Templates");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        // Create list view
-        templatesListView = new ListView<>(templates);
-        templatesListView.setCellFactory(lv -> new ListCell<Template>() {
+        ListView<Template> templateList = new ListView<>(templates);
+        templateList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        templateList.setCellFactory(lv -> new ListCell<Template>() {
             @Override
             protected void updateItem(Template template, boolean empty) {
                 super.updateItem(template, empty);
-                if (empty || template == null) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(createTemplateCard(template));
-                }
+                setText(empty || template == null ? null :
+                        (template.getName() != null ? template.getName() : "Untitled Template"));
             }
         });
-        VBox.setVgrow(templatesListView, Priority.ALWAYS);
 
-        // Add new template button
-        Button newTemplateBtn = new Button("New Template");
-        newTemplateBtn.setGraphic(MaterialDesignIcon.ADD.graphic());
-        newTemplateBtn.setMaxWidth(Double.MAX_VALUE);
-        newTemplateBtn.setOnAction(e -> createNewTemplate());
+        VBox content = new VBox(10);
+        content.getChildren().addAll(
+                new Label("Hold Ctrl/Cmd to select multiple templates:"),
+                templateList
+        );
 
-        section.getChildren().addAll(titleLabel, newTemplateBtn, templatesListView);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        return section;
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                return new ArrayList<>(templateList.getSelectionModel().getSelectedItems());
+            }
+            return null;
+        });
+
+        Optional<List<Template>> result = dialog.showAndWait();
+        if (result.isPresent() && !result.get().isEmpty()) {
+            try {
+                fileTransferHelper.exportTemplatesToDevice(deviceName, result.get());
+                showSuccessAlert("Templates exported successfully to device!");
+            } catch (FileTransferException e) {
+                showErrorAlert("Failed to export templates: " + e.getMessage());
+            }
+        }
     }
 
+    // Card Creation
     private Node createReportCard(Report report) {
         CardPane<VBox> card = new CardPane<>();
 
@@ -264,13 +506,10 @@ public class MainWindow {
         return card;
     }
 
+    // Dialog Helpers
     private void showTemplateSelectionDialog() {
         if (templates.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("No Templates");
-            alert.setHeaderText(null);
-            alert.setContentText("Please create a template first.");
-            alert.showAndWait();
+            showInfoAlert("No Templates", "Please create a template first.");
             return;
         }
 
@@ -326,6 +565,32 @@ public class MainWindow {
         }
     }
 
+    // Alert Helpers
+    private void showSuccessAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // Navigation and CRUD Operations
     private void createNewTemplate() {
         Template newTemplate = new Template();
         openTemplateEditor(newTemplate);
@@ -373,13 +638,12 @@ public class MainWindow {
         }
     }
 
+    // Data Management
     private void loadData() {
-        List<Report> reportList = Serialization.getReports(
-                ProspectApplication.getReportPath());
+        List<Report> reportList = Serialization.getReports(ProspectApplication.getReportPath());
         reports = FXCollections.observableArrayList(reportList);
 
-        List<Template> templateList = Serialization.getTemplates(
-                ProspectApplication.getTemplatePath());
+        List<Template> templateList = Serialization.getTemplates(ProspectApplication.getTemplatePath());
         templates = FXCollections.observableArrayList(templateList);
     }
 
@@ -391,6 +655,11 @@ public class MainWindow {
         if (templatesListView != null) {
             templatesListView.setItems(templates);
         }
+    }
+
+    private void refreshDevices() {
+        fileTransferHelper.refreshDevices();
+        showSuccessAlert("Device list refreshed!");
     }
 
     public View getView() {

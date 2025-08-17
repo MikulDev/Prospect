@@ -2,14 +2,13 @@ package com.momosoftworks.prospect;
 
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.Swatch;
+import com.momosoftworks.prospect.file_transfer.MTPHandler;
 import com.momosoftworks.prospect.report.Registers;
 import com.momosoftworks.prospect.window.MainWindow;
 import com.momosoftworks.prospect.window.ReportEditorWindow;
 import com.momosoftworks.prospect.window.TemplateEditorWindow;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import com.gluonhq.attach.storage.StorageService;
 import com.gluonhq.attach.util.Platform;
@@ -18,13 +17,18 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class ProspectApplication extends MobileApplication {
+
+    public static final Logger LOGGER = Logger.getLogger("Prospect");
 
     public static final String MAIN_VIEW = "Main";
     public static final String REPORT_EDITOR_VIEW = "ReportEditor";
     public static final String TEMPLATE_EDITOR_VIEW = "TemplateEditor";
     public static final String REPORT_VIEWER_VIEW = "ReportViewer";
+
+    private static MTPHandler MTP_HANDLER = null;
 
     private static Path appDataPath;
 
@@ -125,6 +129,12 @@ public class ProspectApplication extends MobileApplication {
 
     public static Path getAppDataPath() {
         return appDataPath;
+    }
+
+    public static MTPHandler getMtpHandler()
+    {
+        if (MTP_HANDLER == null) MTP_HANDLER = MTPHandler.getHandler();
+        return MTP_HANDLER;
     }
 
     public static void main(String[] args) {

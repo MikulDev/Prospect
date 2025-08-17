@@ -8,6 +8,7 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.momosoftworks.prospect.report.template.Template;
 import com.momosoftworks.prospect.report.template.element.AbstractElementTemplate;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -55,9 +56,9 @@ public class TemplateEditorWindow extends View
         constrainedContainer.getChildren().add(mainLayout);
 
         // Bind the max width to the scene height to create square aspect ratio
-        constrainedContainer.maxWidthProperty().bind(
-                sceneProperty().flatMap(scene -> scene == null ? null : scene.heightProperty())
-        );
+        ObservableValue<Double> widthSetter = this.sceneProperty().flatMap(scene -> scene == null ? null : scene.heightProperty().map(height -> height.doubleValue() * 0.75));
+        constrainedContainer.minWidthProperty().bind(widthSetter);
+        constrainedContainer.prefWidthProperty().bind(widthSetter);
         centeringContainer.getChildren().add(constrainedContainer);
 
         // Wrap in scroll pane for mobile

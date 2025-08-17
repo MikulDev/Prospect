@@ -26,6 +26,7 @@ public class TextFieldTemplate extends AbstractElementTemplate
         TextField textField = new TextField(this.getName());
         textField.textProperty().addListener((observable, oldValue, newValue) -> this.setName(textField.getText()));
         box.getChildren().add(textField);
+
         return box;
     }
 }
