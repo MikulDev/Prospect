@@ -95,6 +95,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
       - name: Download and Setup GraalVM for Windows
         run: |
           Invoke-WebRequest -Uri https://github.com/gluonhq/graal/releases/download/gluon-23%2B25.1-dev-2409082136/graalvm-java23-windows-amd64-gluon-23+25.1-dev.zip -OutFile graalvm.zip
@@ -103,16 +110,6 @@ jobs:
           echo "GRAALVM_HOME=$graalPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "JAVA_HOME=$graalPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "$graalPath\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Build Windows Native Executable
         run: ./gradlew nativeBuild --stacktrace
