@@ -10,11 +10,11 @@ jobs:
 
       - name: Download and Setup GraalVM
         run: |
-          wget -q https://github.com/gluonhq/graal/releases/download/gluon-22.1.0.1-Final/graalvm-svm-java17-linux-gluon-22.1.0.1-Final.tar.gz
-          tar -xzf graalvm-svm-java17-linux-gluon-22.1.0.1-Final.tar.gz
-          echo "GRAALVM_HOME=$PWD/graalvm-svm-java17-linux-gluon-22.1.0.1-Final" >> $GITHUB_ENV
-          echo "JAVA_HOME=$PWD/graalvm-svm-java17-linux-gluon-22.1.0.1-Final" >> $GITHUB_ENV
-          echo "$PWD/graalvm-svm-java17-linux-gluon-22.1.0.1-Final/bin" >> $GITHUB_PATH
+          wget -q https://github.com/gluonhq/graal/releases/download/gluon-23%2B25.1-dev-2409082136/graalvm-java23-linux-amd64-gluon-23+25.1-dev.tar.gz
+          tar -xzf graalvm-java23-linux-amd64-gluon-23+25.1-dev.tar.gz
+          echo "GRAALVM_HOME=$PWD/graalvm-java23-linux-amd64-gluon-23+25.1-dev" >> $GITHUB_ENV
+          echo "JAVA_HOME=$PWD/graalvm-java23-linux-amd64-gluon-23+25.1-dev" >> $GITHUB_ENV
+          echo "$PWD/graalvm-java23-linux-amd64-gluon-23+25.1-dev/bin" >> $GITHUB_PATH
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -104,9 +104,9 @@ jobs:
 
       - name: Download and Setup GraalVM for Windows
         run: |
-          Invoke-WebRequest -Uri https://github.com/gluonhq/graal/releases/download/gluon-22.1.0.1-Final/graalvm-svm-java17-windows-gluon-22.1.0.1-Final.zip -OutFile graalvm.zip
+          Invoke-WebRequest -Uri https://github.com/gluonhq/graal/releases/download/gluon-23%2B25.1-dev-2409082136/graalvm-java23-windows-amd64-gluon-23+25.1-dev.zip -OutFile graalvm.zip
           Expand-Archive -Path graalvm.zip -DestinationPath .
-          $graalPath = (Get-ChildItem -Path . -Directory -Filter "graalvm-svm-java17-windows*").FullName
+          $graalPath = (Get-ChildItem -Path . -Directory -Filter "graalvm-java23*").FullName
           echo "GRAALVM_HOME=$graalPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "JAVA_HOME=$graalPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "$graalPath\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
