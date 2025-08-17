@@ -49,13 +49,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: List available Gradle tasks
-        run: ./gradlew tasks --group="gluonfx"
-
       - name: Build Desktop Native
         run: |
           ./gradlew clean build
           ./gradlew nativeBuild --stacktrace
+
+      - name: List Desktop Build Directory
+        run: |
+          echo "Listing files in build/gluonfx/"
+          ls -R build/gluonfx/
+          
+      - name: Upload Desktop Build
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: desktop-linux-x64
+          path: build/gluonfx/x86_64-linux/gvm/*
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: Build Android APK
         run: |
@@ -66,24 +77,6 @@ jobs:
           ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
         continue-on-error: true
 
-      - name: Upload Gluon logs on failure
-        uses: actions/upload-artifact@v4
-        with:
-          name: gluon-build-logs
-          path: |
-            build/gluonfx/log/*.log
-            build/gluonfx/log/**/*.log
-          retention-days: 30
-
-      - name: Upload Desktop Build
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: desktop-linux-x64
-          path: build/gluonfx/x86_64-linux/gvm/
-          retention-days: 30
-          if-no-files-found: warn
-
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         if: success()
@@ -92,3 +85,12 @@ jobs:
           path: build/gluonfx/aarch64-android/gvm/*.apk
           retention-days: 30
           if-no-files-found: ignore
+
+      - name: Upload Gluon logs on failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: gluon-build-logs
+          path: |
+            build/gluonfx/log/*.log
+            build/gluonfx/log/**/*.log
+          retention-days: 30
