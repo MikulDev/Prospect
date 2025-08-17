@@ -68,7 +68,6 @@ public class SectionTemplate extends AbstractElementTemplate
         headerInput.setStyle(String.format("-fx-font-size: %spx; -fx-font-weight: bold;", 18 - headerLevel * 2));
         headerInput.textProperty().addListener((observable, oldValue, newValue) -> this.setName(headerInput.getText()));
         headerBox.getChildren().add(headerInput);
-        contentBox.getChildren().add(headerBox);
 
         /* Add Button */
         Button addButton = new Button("+");
@@ -80,8 +79,7 @@ public class SectionTemplate extends AbstractElementTemplate
             });
             contentBox.getChildren().add(dialog);
         });
-        contentBox.getChildren().add(addButton);
-        mainNode.getChildren().add(contentBox);
+        mainNode.getChildren().addAll(headerBox, contentBox, addButton);
 
         /* Elements */
         for (AbstractElementTemplate element : this.elements)
@@ -100,7 +98,7 @@ public class SectionTemplate extends AbstractElementTemplate
         if (element instanceof SectionTemplate sectionTemplate)
         {   sectionTemplate.headerLevel = this.headerLevel + 1;
         }
-        TemplateEditorWindow.addElement(element, contentBox, this.elements, renderOnly, true);
+        TemplateEditorWindow.addElement(element, contentBox, this.elements, renderOnly);
     }
 
     @Override

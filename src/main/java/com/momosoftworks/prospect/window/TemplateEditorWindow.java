@@ -84,7 +84,7 @@ public class TemplateEditorWindow extends View {
         addButton.setMaxWidth(Double.MAX_VALUE);
         addButton.setOnAction(e -> {
             Pane dialog = showCreateElementDialog((element, d) -> {
-                addElement(element, elementsContainer, template.getElements(), false, false);
+                addElement(element, elementsContainer, template.getElements(), false);
                 section.getChildren().remove(d);
             });
             section.getChildren().add(dialog);
@@ -99,7 +99,6 @@ public class TemplateEditorWindow extends View {
         scrollPane.setFitToWidth(true);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setPrefHeight(400);
 
         section.getChildren().addAll(elementsLabel, scrollPane, addButton);
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
@@ -196,7 +195,7 @@ public class TemplateEditorWindow extends View {
         return optionBox;
     }
 
-    public static void addElement(AbstractElementTemplate element, Pane contentBox, List<AbstractElementTemplate> elements, boolean renderOnly, boolean avoidHeader)
+    public static void addElement(AbstractElementTemplate element, Pane contentBox, List<AbstractElementTemplate> elements, boolean renderOnly)
     {
         if (!renderOnly)
         {   elements.add(element);
@@ -215,18 +214,20 @@ public class TemplateEditorWindow extends View {
         });
         // Reorder Buttons
         VBox reorderBox = new VBox(5);
-        Button upButton = new Button("↑");
+        Button upButton = new Button();
+        upButton.setGraphic(MaterialDesignIcon.ARROW_UPWARD.graphic());
         upButton.setOnAction(event -> {
             int uiIndex = contentBox.getChildren().indexOf(mainBox);
             int elementIndex = elements.indexOf(element);
-            if (uiIndex > (avoidHeader ? 1 : 0)) // Prevent moving header or add button
+            if (uiIndex > 0) // Prevent moving header or add button
             {   contentBox.getChildren().remove(mainBox);
                 elements.remove(element);
                 contentBox.getChildren().add(uiIndex - 1, mainBox);
                 elements.add(elementIndex - 1, element);
             }
         });
-        Button downButton = new Button("↓");
+        Button downButton = new Button();
+        downButton.setGraphic(MaterialDesignIcon.ARROW_DOWNWARD.graphic());
         downButton.setOnAction(event -> {
             int uiIndex = contentBox.getChildren().indexOf(mainBox);
             int elementIndex = elements.indexOf(element);
@@ -329,7 +330,7 @@ public class TemplateEditorWindow extends View {
         appBar.setTitleText("Edit Template");
         appBar.getActionItems().addAll(
                 MaterialDesignIcon.SAVE.button(e -> saveTemplate()),
-                MaterialDesignIcon.SAVE.button(e -> saveTemplateAs())
+                MaterialDesignIcon.COMPUTER.button(e -> saveTemplateAs())
         );
     }
 }
