@@ -80,7 +80,7 @@ jobs:
         if: success()
         with:
           name: desktop-linux-x64
-          path: build/gluonfx/x86_64-linux/
+          path: build/gluonfx/x86_64-linux/gvm/
           retention-days: 30
           if-no-files-found: warn
 
