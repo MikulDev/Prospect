@@ -44,9 +44,9 @@ jobs:
 
       - name: Build Desktop Native
         run: |
-          ./gradlew clean build
-          ./gradlew nativeBuild --stacktrace
-          
+          ./gradlew clean build -Ptarget=linux
+          ./gradlew nativeBuild -Ptarget=linux --stacktrace
+
       - name: Upload Desktop Build
         uses: actions/upload-artifact@v4
         if: success()
@@ -84,7 +84,7 @@ jobs:
       - name: Upload Gluon logs on failure
         uses: actions/upload-artifact@v4
         with:
-          name: gluon-build-logs
+          name: gluon-build-logs-linux
           path: |
             build/gluonfx/log/*.log
             build/gluonfx/log/**/*.log
@@ -104,15 +104,15 @@ jobs:
 
       - name: Download and Setup GraalVM for Windows
         run: |
-          Invoke-WebRequest -Uri https://github.com/gluonhq/graal/releases/download/gluon-23%2B25.1-dev-2409082136/graalvm-java23-windows-amd64-gluon-23+25.1-dev.zip -OutFile graalvm.zip
+          Invoke-WebRequest -Uri https://github.com/gluonhq/graal/releases/download/gluon-22.1.0.1-Final/graalvm-svm-java17-windows-gluon-22.1.0.1-Final.zip -OutFile graalvm.zip
           Expand-Archive -Path graalvm.zip -DestinationPath .
-          $graalPath = (Get-ChildItem -Path . -Directory -Filter "graalvm-java23*").FullName
+          $graalPath = (Get-ChildItem -Path . -Directory -Filter "graalvm-svm*").FullName
           echo "GRAALVM_HOME=$graalPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "JAVA_HOME=$graalPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "$graalPath\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build Windows Native Executable
-        run: ./gradlew nativeBuild --stacktrace
+        run: ./gradlew clean build nativeBuild -Ptarget=windows --stacktrace
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
@@ -122,3 +122,13 @@ jobs:
           path: build\gluonfx\x86_64-windows
           retention-days: 30
           if-no-files-found: warn
+
+      - name: Upload Gluon logs on failure (Windows)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: gluon-build-logs-windows
+          path: |
+            build\gluonfx\log\*.log
+            build\gluonfx\log\**\*.log
+          retention-days: 30
