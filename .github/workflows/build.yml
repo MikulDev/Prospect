@@ -32,13 +32,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libfreetype6-dev libgl-dev libglib2.0-dev libglib2.0-dev libgtk-3-dev libpango1.0-dev libx11-dev libxtst-dev
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 35
-          build-tools: 35.0.0
-          ndk: 23.1.7779620
-
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
@@ -53,11 +46,6 @@ jobs:
         run: |
           ./gradlew clean build
           ./gradlew nativeBuild --stacktrace
-
-      - name: List Desktop Build Directory
-        run: |
-          echo "Listing files in build/gluonfx/"
-          ls -R build/gluonfx/
           
       - name: Upload Desktop Build
         uses: actions/upload-artifact@v4
@@ -67,6 +55,13 @@ jobs:
           path: build/gluonfx/x86_64-linux/Prospect
           retention-days: 30
           if-no-files-found: warn
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 35
+          build-tools: 35.0.0
+          ndk: 23.1.7779620
 
       - name: Build Android APK
         run: |
