@@ -9,7 +9,9 @@ module com.momosoftworks.prospect {
     requires com.gluonhq.attach.storage;
     requires com.gluonhq.attach.pictures;
     requires com.github.librepdf.openpdf;
+    requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.annotation;
 
     exports com.momosoftworks.prospect;
     exports com.momosoftworks.prospect.window;

@@ -10,23 +10,7 @@ repositories {
     maven { url 'https://nexus.gluonhq.com/nexus/content/repositories/releases' }
 }
 
-dependencies {
-    // Gluon Mobile
-    implementation 'com.gluonhq:charm-glisten:6.2.3'
-    implementation 'com.gluonhq.attach:display:4.0.23'
-    implementation 'com.gluonhq.attach:lifecycle:4.0.23'
-    implementation 'com.gluonhq.attach:statusbar:4.0.23'
-    implementation 'com.gluonhq.attach:storage:4.0.23'
-    implementation 'com.gluonhq.attach:util:4.0.23'
-    implementation 'com.gluonhq.attach:pictures:4.0.23'
-
-    // OpenPDF dependencies
-    implementation 'com.github.librepdf:openpdf:1.3.30'
-
-    // JSON processing
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-}
+apply from: 'dependencies.gradle'
 
 javafx {
     version = '21'
