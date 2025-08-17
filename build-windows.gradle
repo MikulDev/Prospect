@@ -1,14 +1,8 @@
-buildscript {
-    def gluonfxVersion = project.hasProperty('target') && project.getProperty('target') == 'windows' ? '1.0.23' : '1.0.25'
-    dependencies {
-        classpath "com.gluonhq:gluonfx-gradle-plugin:${gluonfxVersion}"
-    }
-}
-
 plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.23'
 }
 
 repositories {
@@ -45,7 +39,7 @@ java {
 }
 
 gluonfx {
-    target = project.hasProperty("target") ? project.getProperty("target") : 'host'
+    target = 'windows'
     appIdentifier = 'com.momosoftworks.prospect'
 
     attachConfig {
