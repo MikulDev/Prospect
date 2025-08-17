@@ -39,7 +39,7 @@ java {
 }
 
 gluonfx {
-    target = 'windows'
+    target = 'host'
     appIdentifier = 'com.momosoftworks.prospect'
 
     attachConfig {

@@ -44,8 +44,8 @@ jobs:
 
       - name: Build Desktop Native (Linux)
         run: |
-          ./gradlew -b build-linux.gradle clean build -Ptarget=linux
-          ./gradlew -b build-linux.gradle nativeBuild -Ptarget=linux --stacktrace
+          ./gradlew -b build-linux.gradle clean build
+          ./gradlew -b build-linux.gradle nativeBuild --stacktrace
 
       - name: Upload Desktop Build
         uses: actions/upload-artifact@v4
