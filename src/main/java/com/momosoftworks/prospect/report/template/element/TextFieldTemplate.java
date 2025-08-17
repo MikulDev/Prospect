@@ -19,12 +19,10 @@ public class TextFieldTemplate extends AbstractElementTemplate
     }
 
     @Override
-    public Node getNode()
+    public Node getNodeInner()
     {
         HBox box = new HBox(10);
         box.setAlignment(Pos.CENTER_LEFT);
-        Label label = new Label("Field");
-        box.getChildren().add(label);
         TextField textField = new TextField(this.getName());
         textField.textProperty().addListener((observable, oldValue, newValue) -> this.setName(textField.getText()));
         box.getChildren().add(textField);

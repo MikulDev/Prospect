@@ -1,7 +1,9 @@
 package com.momosoftworks.prospect.report.template.element;
 
 
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.momosoftworks.prospect.window.TemplateEditorWindow;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -10,7 +12,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 import javax.json.*;
 import java.util.ArrayList;
@@ -47,20 +48,18 @@ public class SectionTemplate extends AbstractElementTemplate
     }
 
     @Override
-    public Node getNode()
+    public Node getNodeInner()
     {
-        Pane mainNode = new VBox(5);
+        Pane mainNode = new VBox(15);
+        mainNode.setPadding(new Insets(15));
 
-        VBox contentBox = new VBox(8);
+        VBox contentBox = new VBox(12);
         contentBox.setStyle("-fx-padding: 10; -fx-border-color: lightgray; -fx-border-width: 1px;");
 
         /* Header */
         HBox headerBox = new HBox(10);
         // Label
         headerBox.setAlignment(Pos.CENTER_LEFT);
-        Label headerLabel = new Label("Section");
-        headerLabel.setLabelFor(mainNode);
-        headerBox.getChildren().add(headerLabel);
         int headerLevel = this.getHeaderLevel();
         String headerText = this.getName();
         // Input
@@ -70,7 +69,9 @@ public class SectionTemplate extends AbstractElementTemplate
         headerBox.getChildren().add(headerInput);
 
         /* Add Button */
-        Button addButton = new Button("+");
+        Button addButton = new Button();
+        addButton.setGraphic(MaterialDesignIcon.ADD.graphic());
+        addButton.setStyle("-fx-padding: 0; -fx-min-width: 45px; -fx-min-height: 45px; -fx-pref-width: 45px; -fx-pref-height: 45px; -fx-font-size: 12px;");
         addButton.setOnAction(event ->
         {
             Pane dialog = TemplateEditorWindow.showCreateElementDialog((template, d) ->
@@ -84,7 +85,7 @@ public class SectionTemplate extends AbstractElementTemplate
         /* Elements */
         for (AbstractElementTemplate element : this.elements)
         {
-            Node elementNode = element.getNode();
+            Node elementNode = element.getNodeInner();
             if (elementNode != null)
             {   this.addElement(element, contentBox, true);
             }

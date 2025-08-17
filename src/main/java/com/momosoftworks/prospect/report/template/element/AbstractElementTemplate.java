@@ -1,6 +1,9 @@
 package com.momosoftworks.prospect.report.template.element;
 
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -28,7 +31,24 @@ public abstract class AbstractElementTemplate
         this.type = type;
     }
 
-    public abstract Node getNode();
+    public Node getNode()
+    {
+        VBox container = new VBox(20);
+        container.setAlignment(Pos.CENTER_LEFT);
+
+        Label label = new Label(this.getType());
+        label.setLabelFor(container);
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #2196F3;");
+        container.getChildren().add(label);
+
+        Node innerNode = this.getNodeInner();
+        if (innerNode != null)
+        {   container.getChildren().add(innerNode);
+        }
+        return container;
+    }
+
+    protected abstract Node getNodeInner();
 
     public String getName()
     {   return name;

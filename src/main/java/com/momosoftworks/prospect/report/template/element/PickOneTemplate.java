@@ -1,9 +1,10 @@
 package com.momosoftworks.prospect.report.template.element;
 
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.*;
 
 import javax.json.*;
 import java.util.ArrayList;
@@ -31,14 +32,10 @@ public class PickOneTemplate extends AbstractElementTemplate
     }
 
     @Override
-    public Node getNode()
+    public Node getNodeInner()
     {
-        HBox container = new HBox(10);
+        VBox container = new VBox(20);
         container.setAlignment(Pos.CENTER_LEFT);
-
-        Label label = new Label("Pick One");
-        label.setLabelFor(container);
-        container.getChildren().add(label);
 
         // Name field
         TextField nameField = new TextField(this.getName());
@@ -46,17 +43,16 @@ public class PickOneTemplate extends AbstractElementTemplate
         container.getChildren().add(nameField);
 
         // Options
-        HBox optionsBox = new HBox(10);
-        optionsBox.setAlignment(Pos.CENTER_LEFT);
+        FlowPane optionsPane = new FlowPane(20, 20);
+        optionsPane.setAlignment(Pos.CENTER_LEFT);
         this.options.forEach(option -> {
-            RadioButton radioButton = new RadioButton(option);
-            radioButton.setUserData(option);
-            radioButton.setDisable(true);
-            optionsBox.getChildren().add(radioButton);
+            this.addOption(option, optionsPane, false);
         });
 
         // Add button
-        Button addButton = new Button("+");
+        Button addButton = new Button();
+        addButton.setGraphic(MaterialDesignIcon.ADD.graphic());
+        addButton.setStyle("-fx-padding: 0; -fx-min-width: 25px; -fx-min-height: 25px; -fx-pref-width: 25px; -fx-pref-height: 25px; -fx-font-size: 8px;");
         addButton.setOnAction(event ->
         {
             AtomicReference<String> newOption = new AtomicReference<>("");
@@ -67,30 +63,34 @@ public class PickOneTemplate extends AbstractElementTemplate
             dialog.showAndWait().ifPresent(newOption::set);
 
             String optionText = newOption.get().trim();
-            addOption(optionText, optionsBox);
+            addOption(optionText, optionsPane, true);
         });
-        optionsBox.getChildren().add(addButton);
-        container.getChildren().add(optionsBox);
+        container.getChildren().addAll(optionsPane, addButton);
         return container;
     }
 
-    private void addOption(String option, HBox optionsBox)
+    private void addOption(String option, Pane optionsBox, boolean isNew)
     {
-        if (!options.contains(option) && !option.trim().isEmpty())
+        if ((!isNew || !options.contains(option)) && !option.trim().isEmpty())
         {
-            options.add(option);
+            if (isNew) options.add(option);
             HBox optionContainer = new HBox(10);
-            RadioButton radioButton = new RadioButton(option);
-            radioButton.setUserData(option);
-            radioButton.setDisable(true);
-            Button removeButton = new Button("-");
+            optionContainer.setAlignment(Pos.CENTER_LEFT);
+
+            Button removeButton = new Button();
+            removeButton.setGraphic(MaterialDesignIcon.REMOVE.graphic());
             removeButton.setOnAction(event ->
             {
                 options.remove(option);
                 optionsBox.getChildren().remove(optionContainer);
             });
-            optionContainer.getChildren().addAll(radioButton, removeButton);
-            optionsBox.getChildren().add(Math.max(0, optionsBox.getChildren().size() - 1), optionContainer);
+            // make removeButton smaller and square
+            removeButton.setStyle("-fx-padding: 0; -fx-min-width: 25px; -fx-min-height: 25px; -fx-pref-width: 25px; -fx-pref-height: 25px; -fx-font-size: 8px;");
+
+            Label optionLabel = new Label(option);
+
+            optionContainer.getChildren().addAll(removeButton, optionLabel);
+            optionsBox.getChildren().add(optionContainer);
         }
     }
 
