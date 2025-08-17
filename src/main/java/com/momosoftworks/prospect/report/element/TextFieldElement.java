@@ -48,14 +48,9 @@ public class TextFieldElement extends AbstractElement<TextFieldTemplate> {
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
             this.text = newValue;
         });
-        
-        ScrollPane scrollPane = new ScrollPane(textArea);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         Pane container = new VBox(5);
-        container.getChildren().add(scrollPane);
+        container.getChildren().add(textArea);
 
         return container;
     }

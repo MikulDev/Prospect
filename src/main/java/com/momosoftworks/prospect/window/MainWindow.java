@@ -37,8 +37,7 @@ public class MainWindow {
         view = new View() {
             @Override
             protected void updateAppBar(AppBar appBar) {
-                appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> AppManager.getInstance().getDrawer().open()));
-                appBar.setTitleText("Prospect Inspector");
+                appBar.setTitleText("Prospect");
                 appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshLists()));
             }
         };

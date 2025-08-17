@@ -43,7 +43,7 @@ public class SectionElement extends AbstractElement<SectionTemplate> {
         String headerText = this.template.getName();
 
         Label headerLabel = new Label(headerText);
-        headerLabel.setStyle(String.format("-fx-font-size: %spx; -fx-font-weight: bold;", 16 - headerLevel * 2));
+        headerLabel.setStyle(String.format("-fx-font-size: %spx; -fx-font-weight: bold;", 20 - headerLevel * 2));
         return headerLabel;
     }
 

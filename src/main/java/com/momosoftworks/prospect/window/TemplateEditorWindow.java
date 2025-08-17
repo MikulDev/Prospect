@@ -108,7 +108,6 @@ public class TemplateEditorWindow extends View
         // Add element button
         Button addButton = new Button("Add Element");
         addButton.setGraphic(MaterialDesignIcon.ADD.graphic());
-        addButton.setStyle("-fx-padding: 5; -fx-font-size: 14px;");
         addButton.setMaxWidth(Double.MAX_VALUE);
         addButton.setOnAction(e -> {
             Pane dialog = showCreateElementDialog((element, d) -> {
@@ -177,7 +176,7 @@ public class TemplateEditorWindow extends View
         // Control buttons
         HBox controls = createElementControls(element, index, moveHandler, removeHandler);
 
-        header.getChildren().addAll(typeLabel, spacer, controls);
+        header.getChildren().addAll(spacer, controls);
 
         // Element content
         Node elementNode = element.getNode();
@@ -187,7 +186,7 @@ public class TemplateEditorWindow extends View
             contentBox.setPadding(new Insets(5));
             contentBox.setStyle("-fx-background-color: #f9f9f9; -fx-background-radius: 3;");
             contentBox.getChildren().add(elementNode);
-            card.getChildren().addAll(header, contentBox);
+            card.getChildren().addAll(header, elementNode);
         }
         else
         {   card.getChildren().add(header);
@@ -197,27 +196,31 @@ public class TemplateEditorWindow extends View
     }
 
     private static HBox createElementControls(AbstractElementTemplate element, int index,
-                                              java.util.function.BiConsumer<Integer, Integer> moveHandler,
+                                              BiConsumer<Integer, Integer> moveHandler,
                                               Consumer<AbstractElementTemplate> removeHandler)
     {
         HBox controls = new HBox(5);
 
+        int buttonSize = 30;
+        String buttonStyle = String.format("-fx-padding: 0; -fx-min-width: %spx; -fx-min-height: %spx; -fx-pref-width: %spx; -fx-pref-height: %spx; -fx-font-size: 12px;",
+                                           buttonSize, buttonSize, buttonSize, buttonSize);
+
         // Move up button
         Button upButton = new Button();
         upButton.setGraphic(MaterialDesignIcon.ARROW_UPWARD.graphic());
-        upButton.setStyle("-fx-padding: 0; -fx-min-width: 45px; -fx-min-height: 45px; -fx-pref-width: 45px; -fx-pref-height: 45px; -fx-font-size: 12px;");
+        upButton.setStyle(buttonStyle);
         upButton.setOnAction(e -> moveHandler.accept(index, -1));
 
         // Move down button
         Button downButton = new Button();
         downButton.setGraphic(MaterialDesignIcon.ARROW_DOWNWARD.graphic());
-        downButton.setStyle("-fx-padding: 0; -fx-min-width: 45px; -fx-min-height: 45px; -fx-pref-width: 45px; -fx-pref-height: 45px; -fx-font-size: 12px;");
+        downButton.setStyle(buttonStyle);
         downButton.setOnAction(e -> moveHandler.accept(index, 1));
 
         // Delete/Remove button
         Button deleteButton = new Button();
         deleteButton.setGraphic(MaterialDesignIcon.DELETE.graphic());
-        deleteButton.setStyle("-fx-padding: 0; -fx-min-width: 45px; -fx-min-height: 45px; -fx-pref-width: 45px; -fx-pref-height: 45px; -fx-font-size: 12px;");
+        deleteButton.setStyle(buttonStyle);
         deleteButton.setOnAction(e -> removeHandler.accept(element));
 
         controls.getChildren().addAll(upButton, downButton, deleteButton);

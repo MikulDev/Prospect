@@ -1,5 +1,6 @@
 package com.momosoftworks.prospect.report.element;
 
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.momosoftworks.prospect.render.RenderedItem;
 import com.momosoftworks.prospect.report.template.element.AbstractElementTemplate;
 import com.momosoftworks.prospect.util.Util;
@@ -50,7 +51,7 @@ public abstract class AbstractElement<T extends AbstractElementTemplate>
 
     public Pane getPane()
     {
-        HBox labelNode = new HBox(10);
+        HBox labelNode = new HBox();
         labelNode.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         VBox contentBox = new VBox(8);
         contentBox.setStyle("-fx-padding: 10; -fx-border-color: lightgray; -fx-border-width: 1px;");
@@ -58,7 +59,8 @@ public abstract class AbstractElement<T extends AbstractElementTemplate>
         Node label = this.getLabel();
         Pane innerNode = this.getPaneInner();
 
-        Button hideButton = new Button(hidden ? "Show" : "Hide");
+        Button hideButton = new Button();
+        hideButton.setGraphic(this.hidden ? MaterialDesignIcon.VISIBILITY_OFF.graphic() : MaterialDesignIcon.VISIBILITY.graphic());
         //SvgImageLoaderFactory.install();
         hideButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #555; -fx-cursor: hand;");
         hideButton.setOnAction(e -> {
@@ -67,7 +69,7 @@ public abstract class AbstractElement<T extends AbstractElementTemplate>
             innerNode.setVisible(!this.hidden);
             innerNode.setManaged(!this.hidden);
             // Update button text
-            hideButton.setText(this.hidden ? "Show" : "Hide");
+            hideButton.setGraphic(this.hidden ? MaterialDesignIcon.VISIBILITY_OFF.graphic() : MaterialDesignIcon.VISIBILITY.graphic());
         });
 
         labelNode.getChildren().addAll(label, hideButton);

@@ -10,6 +10,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.momosoftworks.prospect.render.PDFRenderer;
 import com.momosoftworks.prospect.report.Report;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -29,7 +30,7 @@ public class ReportEditorWindow extends View {
     private ScrollPane scrollPane;
 
     public ReportEditorWindow() {
-        initialize();
+        this.initialize();
     }
 
     private void initialize() {
@@ -57,12 +58,40 @@ public class ReportEditorWindow extends View {
             // Mobile: everything vertical
             VBox mobileLayout = new VBox(10);
             mobileLayout.getChildren().addAll(formSection, scrollPane);
-            ScrollPane mobileScroll = new ScrollPane(mobileLayout);
-            mobileScroll.setFitToWidth(true);
-            mainLayout.setCenter(mobileScroll);
+            mainLayout.setCenter(mobileLayout);
         }
 
-        setCenter(mainLayout);
+        // Create a container to limit width and center the content (similar to TemplateEditorWindow)
+        HBox centeringContainer = new HBox();
+        centeringContainer.setAlignment(Pos.CENTER);
+        centeringContainer.setPadding(new Insets(10));
+
+        // Wrap main layout in a width-constrained container
+        VBox constrainedContainer = new VBox();
+        constrainedContainer.getChildren().add(mainLayout);
+
+        // Bind the max width to the scene height to create square aspect ratio
+        constrainedContainer.maxWidthProperty().bind(
+                sceneProperty().flatMap(scene -> scene == null ? null : scene.heightProperty())
+        );
+        centeringContainer.getChildren().add(constrainedContainer);
+
+        // Wrap in scroll pane for mobile
+        if (Platform.isAndroid() || Platform.isIOS()) {
+            ScrollPane mobileScroll = new ScrollPane(centeringContainer);
+            mobileScroll.setFitToWidth(true);
+            mobileScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            mobileScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            setCenter(mobileScroll);
+        } else {
+            // For desktop, use a scroll pane that allows horizontal scrolling if needed
+            ScrollPane desktopScroll = new ScrollPane(centeringContainer);
+            desktopScroll.setFitToWidth(true);
+            desktopScroll.setFitToHeight(true);
+            desktopScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            desktopScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            setCenter(desktopScroll);
+        }
     }
 
     private VBox createFormSection() {

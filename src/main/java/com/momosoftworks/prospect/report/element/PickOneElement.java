@@ -6,6 +6,7 @@ import com.momosoftworks.prospect.render.RenderedText;
 import com.momosoftworks.prospect.report.template.element.PickOneTemplate;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
@@ -39,7 +40,7 @@ public class PickOneElement extends AbstractElement<PickOneTemplate>
     @Override
     public Pane getPaneInner()
     {
-        HBox hbox = new HBox(10);
+        FlowPane optionsPane = new FlowPane(10, 10);
         ToggleGroup toggleGroup = new ToggleGroup();
         
         for (int i = 0; i < this.template.getOptions().size(); i++)
@@ -55,9 +56,9 @@ public class PickOneElement extends AbstractElement<PickOneTemplate>
             {   this.selectedOption = index;
             });
             
-            hbox.getChildren().add(radioButton);
+            optionsPane.getChildren().add(radioButton);
         }
-        return hbox;
+        return optionsPane;
     }
 
     @Override

@@ -64,12 +64,6 @@ public class ProspectApplication extends MobileApplication {
         // Apply Gluon Mobile styling
         Swatch.BLUE.assignTo(scene);
 
-        // Set app icon (if available)
-        // TODO: Add app icon
-        /*((Stage) scene.getWindow()).getIcons().add(
-                new Image(ProspectApplication.class.getResourceAsStream("/icon.png"))
-        );*/
-
         // Configure scene for mobile if needed
         if (Platform.isAndroid() || Platform.isIOS()) {
             scene.getWindow().setWidth(360);

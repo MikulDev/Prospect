@@ -51,7 +51,7 @@ public class SectionTemplate extends AbstractElementTemplate
     public Node getNodeInner()
     {
         Pane mainNode = new VBox(15);
-        mainNode.setPadding(new Insets(15));
+        mainNode.setPadding(new Insets(0, 15, 15, 15));
 
         VBox contentBox = new VBox(12);
         contentBox.setStyle("-fx-padding: 10; -fx-border-color: lightgray; -fx-border-width: 1px;");
