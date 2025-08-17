@@ -44,8 +44,8 @@ jobs:
 
       - name: Build Desktop Native (Linux)
         run: |
-          ./gradlew -b build-linux.gradle clean build
-          ./gradlew -b build-linux.gradle nativeBuild --stacktrace
+          ./gradlew clean build
+          ./gradlew nativeBuild --stacktrace
 
       - name: Upload Desktop Build
         uses: actions/upload-artifact@v4
@@ -67,7 +67,7 @@ jobs:
         run: |
           unset ANDROID_SDK_ROOT
           export ANDROID_HOME="${{ steps.setup-android.outputs.sdk-path }}"
-          ./gradlew -b build-linux.gradle clean nativeBuild nativePackage -Ptarget=android --stacktrace
+          ./gradlew clean nativeBuild nativePackage -Ptarget=android --stacktrace
         env:
           ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
         continue-on-error: true
