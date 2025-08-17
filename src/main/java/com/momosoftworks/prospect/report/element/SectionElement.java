@@ -1,19 +1,19 @@
 package com.momosoftworks.prospect.report.element;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.render.RenderedDivider;
 import com.momosoftworks.prospect.render.RenderedHeader;
 import com.momosoftworks.prospect.render.RenderedItem;
 import com.momosoftworks.prospect.render.RenderedSpacing;
 import com.momosoftworks.prospect.report.template.element.AbstractElementTemplate;
 import com.momosoftworks.prospect.report.template.element.SectionTemplate;
+import com.momosoftworks.prospect.util.JsonHelper;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,14 +92,14 @@ public class SectionElement extends AbstractElement<SectionTemplate> {
     }
 
     @Override
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {
         super.serialize(builder);
-        builder.add("headerLevel", this.template.getHeaderLevel());
-        JsonArrayBuilder elementArray = Json.createArrayBuilder();
+        builder.put("headerLevel", this.template.getHeaderLevel());
+        ArrayNode elementArray = JsonHelper.createArrayBuilder();
         for (AbstractElement<?> element : this.elements)
         {   elementArray.add(AbstractElement.serialize(element));
         }
-        builder.add("elements", elementArray);
+        builder.set("elements", elementArray);
     }
 }

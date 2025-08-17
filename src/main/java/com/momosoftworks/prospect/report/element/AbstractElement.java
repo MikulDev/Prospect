@@ -1,22 +1,17 @@
 package com.momosoftworks.prospect.report.element;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.momosoftworks.prospect.render.RenderedItem;
 import com.momosoftworks.prospect.report.template.element.AbstractElementTemplate;
-import com.momosoftworks.prospect.util.Util;
+import com.momosoftworks.prospect.util.JsonHelper;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.SVGPath;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +20,11 @@ import java.util.function.Function;
 
 public abstract class AbstractElement<T extends AbstractElementTemplate>
 {
-    public static final Map<String, BiConsumer<AbstractElement<?>, JsonObject>> DESERIALIZERS = new HashMap<>();
+    public static final Map<String, BiConsumer<AbstractElement<?>, ObjectNode>> DESERIALIZERS = new HashMap<>();
     public static final Map<String, Function<AbstractElementTemplate, AbstractElement<?>>> CONSTRUCTORS = new HashMap<>();
 
     public static <T extends AbstractElementTemplate, E extends AbstractElement<T>> void
-    registerElement(String type, Function<T, E> constructor, BiConsumer<E, JsonObject> deserializer)
+    registerElement(String type, Function<T, E> constructor, BiConsumer<E, ObjectNode> deserializer)
     {
         DESERIALIZERS.put(type, (element, json) -> deserializer.accept((E) element, json));
         CONSTRUCTORS.put(type, (Function) constructor);
@@ -89,9 +84,9 @@ public abstract class AbstractElement<T extends AbstractElementTemplate>
     {   this.hidden = hidden;
     }
 
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {   this.template.serialize(builder);
-        builder.add("hidden", this.hidden);
+        builder.put("hidden", this.hidden);
     }
 
     public static <T extends AbstractElementTemplate> AbstractElement<T> fromTemplate(T template)
@@ -100,20 +95,20 @@ public abstract class AbstractElement<T extends AbstractElementTemplate>
         return (AbstractElement<T>) CONSTRUCTORS.get(type).apply(template);
     }
 
-    public static AbstractElement<?> deserialize(JsonObject jsonObject)
+    public static AbstractElement<?> deserialize(ObjectNode jsonObject)
     {
-        String type = jsonObject.getString("type");
+        String type = JsonHelper.getString(jsonObject, "type");
         AbstractElementTemplate template = AbstractElementTemplate.deserialize(jsonObject);
         AbstractElement<?> element = CONSTRUCTORS.get(type).apply(template);
         DESERIALIZERS.get(type).accept(element, jsonObject);
-        element.setHidden(jsonObject.getBoolean("hidden", false));
+        element.setHidden(JsonHelper.getBoolean(jsonObject, "hidden", false));
         return element;
     }
 
-    public static JsonObject serialize(AbstractElement<?> element)
+    public static ObjectNode serialize(AbstractElement<?> element)
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        ObjectNode builder = JsonHelper.createObjectBuilder();
         element.serialize(builder);
-        return builder.build();
+        return builder;
     }
 }

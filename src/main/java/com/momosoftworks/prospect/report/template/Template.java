@@ -1,10 +1,13 @@
 package com.momosoftworks.prospect.report.template;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.report.template.element.AbstractElementTemplate;
+import com.momosoftworks.prospect.util.JsonHelper;
 import com.momosoftworks.prospect.util.Serialization;
 
-import javax.json.*;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -71,35 +74,35 @@ public class Template
     {   this.fileName = fileName;
     }
 
-    public JsonObject serialize()
+    public ObjectNode serialize()
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        ObjectNode builder = JsonHelper.createObjectBuilder();
+        ArrayNode arrayBuilder = JsonHelper.createArrayBuilder();
         for (AbstractElementTemplate element : this.elements)
         {   arrayBuilder.add(AbstractElementTemplate.serialize(element));
         }
-        builder.add("elements", arrayBuilder);
-        builder.add("name", this.name);
-        builder.add("creation_date", this.creationDate);
-        builder.add("modified_date", this.modifiedDate);
-        return builder.build();
+        builder.put("elements", arrayBuilder);
+        builder.put("name", this.name);
+        builder.put("creation_date", this.creationDate);
+        builder.put("modified_date", this.modifiedDate);
+        return builder;
     }
 
-    public static Template deserialize(JsonObject jsonObject)
+    public static Template deserialize(ObjectNode jsonObject)
     {
         try
         {
             List<AbstractElementTemplate> elements = new ArrayList<>();
-            for (JsonValue jsonValue : jsonObject.getJsonArray("elements"))
+            for (JsonNode jsonValue : JsonHelper.getJsonArray(jsonObject, "elements"))
             {
-                if (jsonValue instanceof JsonObject jsonElement)
+                if (jsonValue instanceof ObjectNode jsonElement)
                 {   AbstractElementTemplate element = AbstractElementTemplate.deserialize(jsonElement);
                     elements.add(element);
                 }
             }
-            String name = jsonObject.getString("name", "Untitled");
-            long creationDate = jsonObject.getJsonNumber("creation_date").longValue();
-            long modifiedDate = jsonObject.getJsonNumber("modified_date").longValue();
+            String name = JsonHelper.getString(jsonObject, "name", "Untitled");
+            long creationDate = JsonHelper.getLong(jsonObject, "creation_date", System.currentTimeMillis());
+            long modifiedDate = JsonHelper.getLong(jsonObject, "modified_date", System.currentTimeMillis());
             return new Template(elements, name, creationDate, modifiedDate);
         }
         catch (Exception e)

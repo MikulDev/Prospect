@@ -1,19 +1,20 @@
 package com.momosoftworks.prospect.report.template.element;
 
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.momosoftworks.prospect.util.JsonHelper;
 import com.momosoftworks.prospect.window.TemplateEditorWindow;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import javax.json.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,14 +104,14 @@ public class SectionTemplate extends AbstractElementTemplate
     }
 
     @Override
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {
         super.serialize(builder);
-        builder.add("header_level", headerLevel);
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        builder.put("header_level", headerLevel);
+        ArrayNode arrayBuilder = JsonHelper.createArrayBuilder();
         for (AbstractElementTemplate element : elements)
         {   arrayBuilder.add(AbstractElementTemplate.serialize(element));
         }
-        builder.add("elements", arrayBuilder);
+        builder.set("elements", arrayBuilder);
     }
 }

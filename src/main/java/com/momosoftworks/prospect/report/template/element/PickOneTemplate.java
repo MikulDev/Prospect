@@ -1,12 +1,20 @@
 package com.momosoftworks.prospect.report.template.element;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.momosoftworks.prospect.util.JsonHelper;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
-import javax.json.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -95,13 +103,13 @@ public class PickOneTemplate extends AbstractElementTemplate
     }
 
     @Override
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {
         super.serialize(builder);
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        ArrayNode arrayBuilder = JsonHelper.createArrayBuilder();
         for (String option : options)
         {   arrayBuilder.add(option);
         }
-        builder.add("options", arrayBuilder);
+        builder.set("options", arrayBuilder);
     }
 }

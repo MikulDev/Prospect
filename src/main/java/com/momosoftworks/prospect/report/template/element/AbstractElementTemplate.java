@@ -1,13 +1,12 @@
 package com.momosoftworks.prospect.report.template.element;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.momosoftworks.prospect.util.JsonHelper;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -15,10 +14,10 @@ import java.util.function.Supplier;
 
 public abstract class AbstractElementTemplate
 {
-    public static final Map<String, BiFunction<String, JsonObject, ? extends AbstractElementTemplate>> DESERIALIZERS = new HashMap<>();
+    public static final Map<String, BiFunction<String, ObjectNode, ? extends AbstractElementTemplate>> DESERIALIZERS = new HashMap<>();
     public static final Map<String, Supplier<? extends AbstractElementTemplate>> CONSTRUCTORS = new HashMap<>();
 
-    public static <T extends AbstractElementTemplate> void registerTemplate(String type, Supplier<T> defaultSupplier, BiFunction<String, JsonObject, T> deserializer)
+    public static <T extends AbstractElementTemplate> void registerTemplate(String type, Supplier<T> defaultSupplier, BiFunction<String, ObjectNode, T> deserializer)
     {   DESERIALIZERS.put(type, deserializer);
         CONSTRUCTORS.put(type, defaultSupplier);
     }
@@ -60,23 +59,23 @@ public abstract class AbstractElementTemplate
     {   return type;
     }
 
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {
-        builder.add("name", name);
-        builder.add("type", type);
+        builder.put("name", name);
+        builder.put("type", type);
     }
 
-    public static AbstractElementTemplate deserialize(JsonObject jsonObject)
+    public static AbstractElementTemplate deserialize(ObjectNode jsonObject)
     {
-        String type = jsonObject.getString("type");
-        String name = jsonObject.getString("name");
+        String type = JsonHelper.getString(jsonObject, "type");
+        String name = JsonHelper.getString(jsonObject, "name");
         return DESERIALIZERS.get(type).apply(name, jsonObject);
     }
 
-    public static JsonObject serialize(AbstractElementTemplate element)
+    public static ObjectNode serialize(AbstractElementTemplate element)
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        ObjectNode builder = JsonHelper.createObjectBuilder();
         element.serialize(builder);
-        return builder.build();
+        return builder;
     }
 }

@@ -1,5 +1,6 @@
 package com.momosoftworks.prospect.report.element;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.render.RenderedItem;
 import com.momosoftworks.prospect.render.RenderedSpacing;
 import com.momosoftworks.prospect.render.RenderedText;
@@ -7,10 +8,8 @@ import com.momosoftworks.prospect.report.template.element.PickOneTemplate;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
-import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,8 +89,8 @@ public class PickOneElement extends AbstractElement<PickOneTemplate>
     }
 
     @Override
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {   super.serialize(builder);
-        builder.add("value", this.selectedOption);
+        builder.put("value", this.selectedOption);
     }
 }

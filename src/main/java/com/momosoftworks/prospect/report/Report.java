@@ -1,14 +1,20 @@
 package com.momosoftworks.prospect.report;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.report.element.AbstractElement;
 import com.momosoftworks.prospect.report.template.Template;
 import com.momosoftworks.prospect.report.template.element.AbstractElementTemplate;
+import com.momosoftworks.prospect.util.JsonHelper;
 import com.momosoftworks.prospect.util.Serialization;
 
-import javax.json.*;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Report
 {
@@ -87,38 +93,39 @@ public class Report
         }
     }
 
-    public JsonObject serialize()
+    public ObjectNode serialize()
     {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
+        ObjectNode builder = JsonHelper.createObjectBuilder();
         // Properties
-        builder.add("property", property);
-        builder.add("client", client);
-        builder.add("creation_date", creationDate);
-        builder.add("modified_date", modifiedDate);
+        builder.put("property", property);
+        builder.put("client", client);
+        builder.put("creation_date", creationDate);
+        builder.put("modified_date", modifiedDate);
         // Entries
-        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        ArrayNode arrayBuilder = JsonHelper.createArrayBuilder();
         for (AbstractElement<?> element : entries)
         {
-            JsonObjectBuilder elementBuilder = Json.createObjectBuilder();
+            ObjectNode elementBuilder = JsonHelper.createObjectBuilder();
             element.serialize(elementBuilder);
             arrayBuilder.add(elementBuilder);
         }
-        builder.add("entries", arrayBuilder);
-        return builder.build();
+        builder.set("entries", arrayBuilder);
+        return builder;
     }
 
-    public static Report deserialize(JsonObject jsonObject)
+    public static Report deserialize(ObjectNode jsonObject)
     {
         try
         {
             Report report = new Report();
-            report.setProperty(jsonObject.getString("property", ""));
-            report.setClient(jsonObject.getString("client", ""));
-            report.setCreationDate(jsonObject.getJsonNumber("creation_date").longValue());
-            report.setModifiedDate(jsonObject.getJsonNumber("modified_date").longValue());
-            for (JsonValue entry : jsonObject.getJsonArray("entries"))
+            report.setProperty(JsonHelper.getString(jsonObject, "property", ""));
+            report.setClient(JsonHelper.getString(jsonObject, "client", ""));
+            report.setCreationDate(JsonHelper.getLong(jsonObject, "creation_date"));
+            report.setModifiedDate(JsonHelper.getLong(jsonObject, "modified_date"));
+            for (JsonNode entry : JsonHelper.getJsonArray(jsonObject, "entries"))
             {
-                AbstractElement<?> element = AbstractElement.deserialize((JsonObject) entry);
+                if (!(entry instanceof ObjectNode objectNode)) continue;
+                AbstractElement<?> element = AbstractElement.deserialize(objectNode);
                 report.addElement(element);
             }
             return report;

@@ -1,7 +1,6 @@
 module com.momosoftworks.prospect {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.json;
     requires java.desktop;
 
     requires java.logging;
@@ -10,6 +9,7 @@ module com.momosoftworks.prospect {
     requires com.gluonhq.attach.storage;
     requires com.gluonhq.attach.pictures;
     requires com.github.librepdf.openpdf;
+    requires com.fasterxml.jackson.databind;
 
     exports com.momosoftworks.prospect;
     exports com.momosoftworks.prospect.window;

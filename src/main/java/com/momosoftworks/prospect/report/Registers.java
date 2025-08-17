@@ -1,6 +1,9 @@
 package com.momosoftworks.prospect.report;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.report.element.AbstractElement;
 import com.momosoftworks.prospect.report.element.PickOneElement;
 import com.momosoftworks.prospect.report.element.SectionElement;
@@ -9,10 +12,8 @@ import com.momosoftworks.prospect.report.template.element.AbstractElementTemplat
 import com.momosoftworks.prospect.report.template.element.PickOneTemplate;
 import com.momosoftworks.prospect.report.template.element.SectionTemplate;
 import com.momosoftworks.prospect.report.template.element.TextFieldTemplate;
+import com.momosoftworks.prospect.util.JsonHelper;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,17 +22,17 @@ public class Registers
     public static void registerElements()
     {
         AbstractElement.registerElement(PickOneTemplate.TYPE, PickOneElement::new, (element, json) -> {
-            element.setSelectedOption(json.getInt("value", -1));
+            element.setSelectedOption(JsonHelper.getInt(json, "value", -1));
         });
         
         AbstractElement.registerElement(TextFieldTemplate.TYPE, TextFieldElement::new, (element, json) -> {
-            element.setText(json.getString("value", ""));
+            element.setText(JsonHelper.getString(json, "value", ""));
         });
         
         AbstractElement.registerElement(SectionTemplate.TYPE, SectionElement::new, (element, json) -> {
             element.getElements().clear();
-            json.getJsonArray("elements").forEach(e -> {
-                element.getElements().add(AbstractElement.deserialize((JsonObject) e));
+            JsonHelper.getJsonArray(json, "elements").forEach(e -> {
+                element.getElements().add(AbstractElement.deserialize((ObjectNode) e));
             });
         });
     }
@@ -40,9 +41,9 @@ public class Registers
     {
         AbstractElementTemplate.registerTemplate(PickOneTemplate.TYPE, PickOneTemplate::new, (name, json) -> {
             List<String> options = new ArrayList<>();
-            JsonArray optionsArray = json.getJsonArray("options");
+            ArrayNode optionsArray = JsonHelper.getJsonArray(json, "options");
             for (int i = 0; i < optionsArray.size(); i++) {
-                options.add(optionsArray.getString(i));
+                options.add(JsonHelper.getString(optionsArray, i));
             }
             return new PickOneTemplate(name, options);
         });
@@ -52,11 +53,11 @@ public class Registers
         });
         
         AbstractElementTemplate.registerTemplate(SectionTemplate.TYPE, SectionTemplate::new, (name, json) -> {
-            int headerLevel = json.getInt("header_level", 1);
+            int headerLevel = JsonHelper.getInt(json, "header_level", 1);
             List<AbstractElementTemplate> elements = new ArrayList<>();
-            for (JsonValue jsonValue : json.getJsonArray("elements"))
+            for (JsonNode jsonValue : JsonHelper.getJsonArray(json, "elements"))
             {
-                if (jsonValue instanceof JsonObject jsonObject) {
+                if (jsonValue instanceof ObjectNode jsonObject) {
                     AbstractElementTemplate element = AbstractElementTemplate.deserialize(jsonObject);
                     elements.add(element);
                 }

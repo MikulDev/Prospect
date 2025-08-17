@@ -1,19 +1,15 @@
 
 package com.momosoftworks.prospect.report.element;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.render.RenderedItem;
 import com.momosoftworks.prospect.render.RenderedSpacing;
 import com.momosoftworks.prospect.render.RenderedText;
 import com.momosoftworks.prospect.report.template.element.TextFieldTemplate;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import javax.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,9 +79,9 @@ public class TextFieldElement extends AbstractElement<TextFieldTemplate> {
     }
 
     @Override
-    public void serialize(JsonObjectBuilder builder)
+    public void serialize(ObjectNode builder)
     {
         super.serialize(builder);
-        builder.add("value", this.text);
+        builder.put("value", this.text);
     }
 }
