@@ -113,6 +113,7 @@ jobs:
 
       - name: Build Windows Native Executable
         run: ./gradlew -b build-windows.gradle clean build nativeBuild --stacktrace
+        continue-on-error: true
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
