@@ -3,6 +3,8 @@ package com.momosoftworks.prospect.file_transfer;
 import com.momosoftworks.prospect.ProspectApplication;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -44,21 +46,31 @@ public interface MTPHandler
         // Get all URLs from the class loader
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-        if (classLoader instanceof java.net.URLClassLoader) {
-            java.net.URLClassLoader urlClassLoader = (java.net.URLClassLoader) classLoader;
-            java.net.URL[] urls = urlClassLoader.getURLs();
+        System.out.println(Arrays.toString(classLoader.getDefinedPackages()));
 
-            System.out.println("Classpath URLs:");
-            for (java.net.URL url : urls) {
-                System.out.println("  - " + url);
-
-                // If it's a directory or JAR, you could scan it
-                if (url.getPath().endsWith(".jar")) {
-                    System.out.println("    (JAR file)");
-                } else {
-                    System.out.println("    (Directory)");
-                }
+        System.out.println("\nClasspath from system property:");
+        String classpath = System.getProperty("java.class.path");
+        if (classpath != null) {
+            for (String path : classpath.split(File.pathSeparator)) {
+                System.out.println("  - " + path);
             }
+        }
+
+        // Try to find the class as a resource
+        System.out.println("\nSearching for class as resource:");
+        String[] resourcePaths = {
+                "file_transfer/WindowsMTPHandler.class",
+                "WindowsMTPHandler.class",
+                "/file_transfer/WindowsMTPHandler.class"
+        };
+
+        for (String resourcePath : resourcePaths) {
+            java.net.URL resource = classLoader.getResource(resourcePath);
+            InputStream stream = classLoader.getResourceAsStream(resourcePath);
+            System.out.println("  " + resourcePath + " -> " +
+                                       (resource != null ? "Found at: " + resource : "Not found") +
+                                       (stream != null ? " (stream available)" : ""));
+            if (stream != null) stream.close();
         }
 
         // Try alternative class names in case there's a naming issue
@@ -66,6 +78,7 @@ public interface MTPHandler
             "file_transfer.WindowsMTPHandler",
             "WindowsMTPHandler",
             "com.momosoftworks.prospect.file_transfer.WindowsMTPHandler",
+            "com.momosoftworks.file_transfer.WindowsMTPHandler",
             "src.windows.java.file_transfer.WindowsMTPHandler"
         };
 
