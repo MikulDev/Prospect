@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cleanup Gradle Cache
-        run: ./gradlew clean build --refresh-dependencies --rerun-tasks --stacktrace
+        run: ./gradlew clean -refresh-dependencies --stacktrace
 
       - name: Download and Setup GraalVM for Linux/Android
         run: |
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cleanup Gradle Cache
-        run: ./gradlew clean build --refresh-dependencies --rerun-tasks --stacktrace
+        run: ./gradlew clean --refresh-dependencies --stacktrace
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
