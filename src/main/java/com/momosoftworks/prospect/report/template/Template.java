@@ -10,6 +10,7 @@ import com.momosoftworks.prospect.util.Serialization;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Level;
 
 public class Template
 {
@@ -123,6 +124,7 @@ public class Template
         {   file += ".json";
         }
         Path path = ProspectApplication.getTemplatePath().resolve(file);
+        ProspectApplication.LOGGER.log(Level.INFO, "Saving template to: " + path);
         Serialization.writeJsonFile(this.serialize(), path);
     }
 }

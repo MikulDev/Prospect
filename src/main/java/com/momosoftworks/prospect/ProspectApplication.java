@@ -3,7 +3,6 @@ package com.momosoftworks.prospect;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.visual.Swatch;
-import com.momosoftworks.prospect.file_transfer.MTPHandler;
 import com.momosoftworks.prospect.report.Registers;
 import com.momosoftworks.prospect.window.MainWindow;
 import com.momosoftworks.prospect.window.ReportEditorWindow;
@@ -27,8 +26,6 @@ public class ProspectApplication extends MobileApplication {
     public static final String REPORT_EDITOR_VIEW = "ReportEditor";
     public static final String TEMPLATE_EDITOR_VIEW = "TemplateEditor";
     public static final String REPORT_VIEWER_VIEW = "ReportViewer";
-
-    private static MTPHandler MTP_HANDLER = null;
 
     private static Path appDataPath;
 
@@ -129,12 +126,6 @@ public class ProspectApplication extends MobileApplication {
 
     public static Path getAppDataPath() {
         return appDataPath;
-    }
-
-    public static MTPHandler getMtpHandler()
-    {
-        if (MTP_HANDLER == null) MTP_HANDLER = MTPHandler.getHandler();
-        return MTP_HANDLER;
     }
 
     public static void main(String[] args) {

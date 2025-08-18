@@ -2,7 +2,7 @@ package com.momosoftworks.prospect.util;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.momosoftworks.prospect.ProspectApplication;
-import com.momosoftworks.prospect.file_transfer.MTPHandler;
+import com.momosoftworks.prospect.file_transfer.AdbFileTransfer;
 import com.momosoftworks.prospect.report.Report;
 import com.momosoftworks.prospect.report.template.Template;
 
@@ -16,99 +16,108 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class FileTransferHelper
-{
-    public enum ImportType
-    {   REPORT, TEMPLATE
+public class FileTransferHelper {
+
+    public enum ImportType {
+        REPORT, TEMPLATE
     }
 
-    public enum TransferDirection
-    {   FROM_DEVICE, TO_DEVICE
-    }
+    private final AdbFileTransfer adbManager;
 
-    private final MTPHandler mtpHandler;
+    public FileTransferHelper() {
+        this.adbManager = new AdbFileTransfer();
 
-    public FileTransferHelper()
-    {   this.mtpHandler = ProspectApplication.getMtpHandler();
+        // Register shutdown hook to clean up temporary ADB files
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (adbManager != null) {
+                adbManager.cleanup();
+            }
+        }));
     }
 
     /**
      * Get list of connected devices that have the Prospect app
      */
-    public List<String> getConnectedDevicesWithProspectApp()
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot get connected devices.");
+    public List<String> getConnectedDevicesWithProspectApp() {
+        try {
+            List<String> allDevices = adbManager.getConnectedDevices();
+            List<String> prospectDevices = new ArrayList<>();
+
+            for (String deviceId : allDevices) {
+                if (hasProspectAppOnDevice(deviceId))
+                {
+                    // Get a friendly name for the device
+                    String deviceInfo = adbManager.getDeviceInfo(deviceId);
+                    String displayName = deviceInfo.isEmpty() ? deviceId : deviceInfo + " (" + deviceId + ")";
+                    prospectDevices.add(displayName);
+                }
+            }
+
+            return prospectDevices;
+
+        } catch (Exception e) {
+            ProspectApplication.LOGGER.log(Level.WARNING, "Failed to get connected devices", e);
             return List.of();
         }
-        List<String> allDevices = mtpHandler.getConnectedDevices();
-        List<String> prospectDevices = new ArrayList<>();
-
-        for (String device : allDevices)
-        {
-            if (hasProspectAppOnDevice(device))
-            {   prospectDevices.add(device);
-            }
-        }
-
-        return prospectDevices;
     }
 
     /**
      * Check if a device has the Prospect app installed with data
      */
-    private boolean hasProspectAppOnDevice(String deviceName)
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot check for Prospect app.");
+    private boolean hasProspectAppOnDevice(String deviceId) {
+        try {
+            // Check if the prospect app directory exists
+            return adbManager.pathExists(deviceId, getProspectAppPath());
+        } catch (Exception e) {
+            ProspectApplication.LOGGER.log(Level.WARNING, "Failed to check for Prospect app on device: " + deviceId, e);
             return false;
-        }
-        try
-        {   // Try to get files from the prospect app directory
-            List<File> prospectFiles = mtpHandler.getFiles(deviceName, getProspectAppPath());
-            return prospectFiles != null && !prospectFiles.isEmpty();
-        }
-        catch (Exception e)
-        {   return false;
         }
     }
 
     /**
      * Get the Prospect app directory path on mobile devices
      */
-    private String getProspectAppPath()
-    {   return "Android/data/com.momosoftworks.prospect/files";
+    private String getProspectAppPath() {
+        return "Android/data/com.momosoftworks.prospect/files";
+    }
+
+    /**
+     * Extract device ID from display name
+     */
+    private String extractDeviceId(String displayName) {
+        if (displayName.contains("(") && displayName.contains(")")) {
+            int start = displayName.lastIndexOf("(") + 1;
+            int end = displayName.lastIndexOf(")");
+            return displayName.substring(start, end);
+        }
+        return displayName; // Fallback if no parentheses found
     }
 
     /**
      * Get list of files of specified type from a connected device
      */
-    public List<DeviceFile> getDeviceFiles(String deviceName, ImportType type)
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot get device files.");
-            return List.of();
-        }
-        String subPath = type == ImportType.REPORT ? "reports" : "templates";
-        String fullPath = getProspectAppPath() + "/" + subPath;
+    public List<DeviceFile> getDeviceFiles(String deviceDisplayName, ImportType type) {
+        try {
+            String deviceId = extractDeviceId(deviceDisplayName);
+            String subPath = type == ImportType.REPORT ? "reports" : "templates";
+            String fullPath = getProspectAppPath() + "/" + subPath;
 
-        try
-        {   List<File> files = mtpHandler.getFiles(deviceName, fullPath);
-            return files.stream()
+            List<AdbFileTransfer.DeviceFile> adbFiles = adbManager.getFiles(deviceId, fullPath);
+
+            return adbFiles.stream()
                     .filter(file -> file.getName().toLowerCase().endsWith(".json"))
-                    .map(file -> new DeviceFile(file.getName(), fullPath + "/" + file.getName(), file.length()))
+                    .map(file -> new DeviceFile(file.getName(), file.getPath(), file.getSize()))
                     .collect(Collectors.toList());
-        }
-        catch (Exception e)
-        {   throw new FileTransferException("Failed to get files from device: " + e.getMessage(), e);
+
+        } catch (Exception e) {
+            throw new FileTransferException("Failed to get files from device: " + e.getMessage(), e);
         }
     }
 
     /**
      * Import a file from local filesystem
      */
-    public void importLocalFile(File sourceFile, ImportType type) throws IOException
-    {
+    public void importLocalFile(File sourceFile, ImportType type) throws IOException {
         Path targetPath = getTargetPath(type);
         File targetFile = targetPath.resolve(sourceFile.getName()).toFile();
         Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -117,113 +126,127 @@ public class FileTransferHelper
     /**
      * Import a file from a connected device
      */
-    public void importFileFromDevice(String deviceName, String deviceFilePath, ImportType type)
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot import file from device.");
-            return;
-        }
-        try
-        {
-            // Create a temporary file to receive the data
+    public void importFileFromDevice(String deviceDisplayName, String deviceFilePath, ImportType type) {
+        try {
+            String deviceId = extractDeviceId(deviceDisplayName);
             Path targetPath = getTargetPath(type);
             String fileName = deviceFilePath.substring(deviceFilePath.lastIndexOf("/") + 1);
             File targetFile = targetPath.resolve(fileName).toFile();
 
-            // Get the file from device and copy it to our local storage
-            List<File> deviceFiles = mtpHandler.getFiles(deviceName, deviceFilePath.substring(0, deviceFilePath.lastIndexOf("/")));
-            File sourceFile = deviceFiles.stream()
-                    .filter(f -> f.getName().equals(fileName))
-                    .findFirst()
-                    .orElseThrow(() -> new FileTransferException("File not found on device: " + fileName));
+            // Create a temporary file to receive the data
+            File tempFile = File.createTempFile("prospect_import", ".json");
 
-            Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            try {
+                // Pull the file from device to temp location
+                File downloadedFile = adbManager.readFile(deviceId, deviceFilePath.replace("/sdcard/", ""), tempFile);
 
-        }
-        catch (Exception e)
-        {   throw new FileTransferException("Failed to import file from device: " + e.getMessage(), e);
+                if (downloadedFile != null && downloadedFile.exists()) {
+                    // Copy from temp to final location
+                    Files.copy(downloadedFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } else {
+                    throw new FileTransferException("Failed to download file from device");
+                }
+
+            } finally {
+                // Clean up temp file
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+            }
+
+        } catch (Exception e) {
+            throw new FileTransferException("Failed to import file from device: " + e.getMessage(), e);
         }
     }
 
     /**
      * Export a report to a connected device
      */
-    public void exportReportToDevice(String deviceName, Report report)
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot export report to device.");
-            return;
-        }
-        try
-        {
+    public void exportReportToDevice(String deviceDisplayName, Report report) {
+        try {
+            String deviceId = extractDeviceId(deviceDisplayName);
             // Serialize the report to a temporary file
             File tempFile = createTempReportFile(report);
-            // Send to device
-            String devicePath = getProspectAppPath() + "/reports";
-            mtpHandler.writeFile(deviceName, devicePath, tempFile);
-            // Clean up temp file
-            tempFile.delete();
-        }
-        catch (Exception e)
-        {   throw new FileTransferException("Failed to export report to device: " + e.getMessage(), e);
+
+            try {
+                // Send to device
+                String devicePath = getProspectAppPath() + "/reports";
+                boolean success = adbManager.writeFile(deviceId, devicePath, tempFile);
+
+                if (!success) {
+                    throw new FileTransferException("Failed to write report file to device");
+                }
+
+            } finally {
+                // Clean up temp file
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+            }
+
+        } catch (Exception e) {
+            throw new FileTransferException("Failed to export report to device: " + e.getMessage(), e);
         }
     }
 
     /**
      * Export a template to a connected device
      */
-    public void exportTemplateToDevice(String deviceName, Template template)
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot export template to device.");
-            return;
-        }
-        try
-        {
+    public void exportTemplateToDevice(String deviceDisplayName, Template template) {
+        try {
+            String deviceId = extractDeviceId(deviceDisplayName);
             // Serialize the template to a temporary file
             File tempFile = createTempTemplateFile(template);
-            // Send to device
-            String devicePath = getProspectAppPath() + "/templates";
-            mtpHandler.writeFile(deviceName, devicePath, tempFile);
-            // Clean up temp file
-            tempFile.delete();
-        }
-        catch (Exception e)
-        {   throw new FileTransferException("Failed to export template to device: " + e.getMessage(), e);
+
+            try {
+                // Send to device
+                String devicePath = getProspectAppPath() + "/templates";
+                boolean success = adbManager.writeFile(deviceId, devicePath, tempFile);
+
+                if (!success) {
+                    throw new FileTransferException("Failed to write template file to device");
+                }
+
+            } finally {
+                // Clean up temp file
+                if (tempFile.exists()) {
+                    tempFile.delete();
+                }
+            }
+
+        } catch (Exception e) {
+            throw new FileTransferException("Failed to export template to device: " + e.getMessage(), e);
         }
     }
 
     /**
      * Export multiple reports to a connected device
      */
-    public void exportReportsToDevice(String deviceName, List<Report> reports)
-    {
-        for (Report report : reports)
-        {   exportReportToDevice(deviceName, report);
+    public void exportReportsToDevice(String deviceDisplayName, List<Report> reports) {
+        for (Report report : reports) {
+            exportReportToDevice(deviceDisplayName, report);
         }
     }
 
     /**
      * Export multiple templates to a connected device
      */
-    public void exportTemplatesToDevice(String deviceName, List<Template> templates)
-    {
-        for (Template template : templates)
-        {   exportTemplateToDevice(deviceName, template);
+    public void exportTemplatesToDevice(String deviceDisplayName, List<Template> templates) {
+        for (Template template : templates) {
+            exportTemplateToDevice(deviceDisplayName, template);
         }
     }
 
     /**
      * Create a temporary file for a report
      */
-    private File createTempReportFile(Report report) throws IOException
-    {
+    private File createTempReportFile(Report report) throws IOException {
         File tempFile = File.createTempFile("prospect_report", ".json");
 
         // Serialize the report to JSON and write to temp file
         ObjectNode reportJson = report.serialize();
-        if (!Serialization.writeJsonFile(reportJson, tempFile.toPath()))
-        {   throw new IOException("Failed to serialize report to temporary file");
+        if (!Serialization.writeJsonFile(reportJson, tempFile.toPath())) {
+            throw new IOException("Failed to serialize report to temporary file");
         }
         return tempFile;
     }
@@ -231,14 +254,13 @@ public class FileTransferHelper
     /**
      * Create a temporary file for a template
      */
-    private File createTempTemplateFile(Template template) throws IOException
-    {
+    private File createTempTemplateFile(Template template) throws IOException {
         File tempFile = File.createTempFile("prospect_template", ".json");
 
         // Serialize the template to JSON and write to temp file
         ObjectNode templateJson = template.serialize();
-        if (!Serialization.writeJsonFile(templateJson, tempFile.toPath()))
-        {   throw new IOException("Failed to serialize template to temporary file");
+        if (!Serialization.writeJsonFile(templateJson, tempFile.toPath())) {
+            throw new IOException("Failed to serialize template to temporary file");
         }
         return tempFile;
     }
@@ -246,37 +268,42 @@ public class FileTransferHelper
     /**
      * Get the target path for imports based on type
      */
-    private Path getTargetPath(ImportType type)
-    {
+    private Path getTargetPath(ImportType type) {
         return type == ImportType.REPORT ?
                ProspectApplication.getReportPath() :
                ProspectApplication.getTemplatePath();
     }
 
     /**
-     * Refresh the MTP handler to detect new devices
+     * Refresh the device connections
      */
-    public void refreshDevices()
-    {
-        if (mtpHandler == null)
-        {   ProspectApplication.LOGGER.log(Level.WARNING, "MTP handler is not initialized. Cannot refresh devices.");
-            return;
+    public void refreshDevices() {
+        try {
+            adbManager.refresh();
+        } catch (Exception e) {
+            ProspectApplication.LOGGER.log(Level.WARNING, "Failed to refresh devices", e);
         }
-        mtpHandler.refresh();
+    }
+
+    /**
+     * Clean up resources
+     */
+    public void cleanup() {
+        if (adbManager != null) {
+            adbManager.cleanup();
+        }
     }
 
     /**
      * Represents a file on a connected device
      */
-    public record DeviceFile(String name, String path, long size)
-    {
+    public record DeviceFile(String name, String path, long size) {
         @Override
-        public String toString()
-        {   return name + " (" + formatFileSize(size) + ")";
+        public String toString() {
+            return name + " (" + formatFileSize(size) + ")";
         }
 
-        private String formatFileSize(long bytes)
-        {
+        private String formatFileSize(long bytes) {
             if (bytes < 1024) return bytes + " B";
             else if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
             else return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
@@ -286,14 +313,13 @@ public class FileTransferHelper
     /**
      * Exception for file transfer operations
      */
-    public static class FileTransferException extends RuntimeException
-    {
-        public FileTransferException(String message)
-        {   super(message);
+    public static class FileTransferException extends RuntimeException {
+        public FileTransferException(String message) {
+            super(message);
         }
 
-        public FileTransferException(String message, Throwable cause)
-        {   super(message, cause);
+        public FileTransferException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

@@ -26,6 +26,7 @@ java {
 sourceSets {
     main {
         java.srcDirs = ['src/main/java', 'src/windows/java']
+        resources.srcDirs = ['src/main/resources', 'src/windows/resources']
     }
 }
 
