@@ -13,7 +13,7 @@ repositories {
 apply from: 'dependencies.gradle'
 
 dependencies {
-    implementation files('lib/windows/MtpJava.jar')
+    implementation files('lib/windows/MtpJava-1.0-SNAPSHOT.jar')
 }
 
 javafx {

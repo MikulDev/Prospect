@@ -13,7 +13,7 @@ repositories {
 apply from: 'dependencies.gradle'
 
 dependencies {
-    if (System.getProperty("os.name").toLowerCase().contains("win") || System.getProperty("env", "development") != "production")
+    if (System.getProperty("env", "development") != "production")
     {   implementation files('lib/windows/MtpJava-1.0-SNAPSHOT.jar')
     }
 }
