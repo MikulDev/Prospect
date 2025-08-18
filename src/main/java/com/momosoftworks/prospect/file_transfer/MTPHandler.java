@@ -19,7 +19,7 @@ public interface MTPHandler
     {
         scanForMTPHandlers();
         if (System.getProperty("os.name").toLowerCase().contains("win"))
-        {   return constructHandler("file_transfer.WindowsMTPHandler");
+        {   return constructHandler("momosoftworks.file_transfer.WindowsMTPHandler");
         }
         else if (System.getProperty("os.name").toLowerCase().contains("linux"))
         {   ProspectApplication.LOGGER.log(Level.WARNING, "Linux MTP handling is not implemented yet.");

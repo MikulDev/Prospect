@@ -1,11 +1,11 @@
-package file_transfer;
+package momosoftworks.file_transfer;
 
-import com.github.hms11rn.mtp.PortableDevice;
-import com.github.hms11rn.mtp.PortableDeviceManager;
-import com.github.hms11rn.mtp.content.PortableDeviceContainerObject;
-import com.github.hms11rn.mtp.content.PortableDeviceObject;
 import com.momosoftworks.prospect.file_transfer.MTPHandler;
 
+import hms11n.mtp.PortableDevice;
+import hms11n.mtp.PortableDeviceManager;
+import hms11n.mtp.content.PortableDeviceContainerObject;
+import hms11n.mtp.content.PortableDeviceObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
