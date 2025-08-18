@@ -9,13 +9,11 @@ import com.momosoftworks.prospect.window.ReportEditorWindow;
 import com.momosoftworks.prospect.window.TemplateEditorWindow;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import com.gluonhq.attach.storage.StorageService;
 import com.gluonhq.attach.util.Platform;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 public class ProspectApplication extends MobileApplication {
@@ -27,7 +25,7 @@ public class ProspectApplication extends MobileApplication {
     public static final String TEMPLATE_EDITOR_VIEW = "TemplateEditor";
     public static final String REPORT_VIEWER_VIEW = "ReportViewer";
 
-    private static Path appDataPath;
+    private static Path DATA_PATH;
 
     @Override
     public void init() {
@@ -81,23 +79,15 @@ public class ProspectApplication extends MobileApplication {
         AppManager.getInstance().switchView(MAIN_VIEW);
     }
 
-    private void initializeStoragePaths() {
-        // Get the appropriate storage directory based on platform
-        Optional<StorageService> storageService = StorageService.create();
+    private void initializeStoragePaths()
+    {
 
-        if (storageService.isPresent()) {
-            // Use Gluon Attach Storage for mobile platforms
-            Optional<File> privateStorage = storageService.get().getPrivateStorage();
-            if (privateStorage.isPresent()) {
-                appDataPath = privateStorage.get().toPath();
-            } else {
-                // Fallback to home directory
-                appDataPath = Paths.get(System.getProperty("user.home"), "prospect");
-            }
-        } else {
-            // Desktop fallback
-            appDataPath = Paths.get(System.getProperty("user.home"), "prospect");
-        }
+        DATA_PATH = switch (Platform.getCurrent())
+        {
+            case ANDROID -> Paths.get("/storage/emulated/0/Android/data/com.momosoftworks.prospect/files");
+            case DESKTOP -> Paths.get(System.getProperty("user.home"), "prospect");
+            case IOS -> throw new UnsupportedOperationException("iOS platform is not supported yet");
+        };
 
         // Create subdirectories
         createDirectoryIfNotExists(getTemplatePath());
@@ -113,19 +103,19 @@ public class ProspectApplication extends MobileApplication {
     }
 
     public static Path getTemplatePath() {
-        return appDataPath.resolve("templates");
+        return DATA_PATH.resolve("templates");
     }
 
     public static Path getReportPath() {
-        return appDataPath.resolve("reports");
+        return DATA_PATH.resolve("reports");
     }
 
     public static Path getPdfPath() {
-        return appDataPath.resolve("exports");
+        return DATA_PATH.resolve("exports");
     }
 
-    public static Path getAppDataPath() {
-        return appDataPath;
+    public static Path getDataPath() {
+        return DATA_PATH;
     }
 
     public static void main(String[] args) {

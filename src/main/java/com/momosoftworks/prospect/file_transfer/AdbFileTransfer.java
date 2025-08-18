@@ -209,7 +209,7 @@ public class AdbFileTransfer
             }
             command.add("push");
             command.add(localFile.getAbsolutePath());
-            command.add("/sdcard/" + remotePath + "/" + localFile.getName());
+            command.add(remotePath + "/" + localFile.getName());
 
             ProcessBuilder pb = new ProcessBuilder(command);
             Process process = pb.start();

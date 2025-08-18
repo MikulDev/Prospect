@@ -67,7 +67,7 @@ public class FileTransferHelper {
     private boolean hasProspectAppOnDevice(String deviceId) {
         try {
             // Check if the prospect app directory exists
-            return adbManager.pathExists(deviceId, getProspectAppPath());
+            return adbManager.pathExists(deviceId, ProspectApplication.getDataPath().toString());
         } catch (Exception e) {
             ProspectApplication.LOGGER.log(Level.WARNING, "Failed to check for Prospect app on device: " + deviceId, e);
             return false;
@@ -78,7 +78,7 @@ public class FileTransferHelper {
      * Get the Prospect app directory path on mobile devices
      */
     private String getProspectAppPath() {
-        return "Android/data/com.momosoftworks.prospect/files";
+        return "/storage/emulated/0/Android/data/com.momosoftworks.prospect/files";
     }
 
     /**
