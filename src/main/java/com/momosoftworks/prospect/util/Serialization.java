@@ -27,7 +27,7 @@ public class Serialization
     {
         try
         {
-            File file = path.toFile();
+            File file = path.toAbsolutePath().toFile();
             if (!file.exists())
             {
                 file.getParentFile().mkdirs();
@@ -49,10 +49,9 @@ public class Serialization
     {
         try
         {
-            File file = path.toFile();
+            File file = path.toAbsolutePath().toFile();
             if (!file.exists())
-            {
-                return null;
+            {   return null;
             }
 
             return OBJECT_MAPPER.readTree(file);
@@ -65,7 +64,7 @@ public class Serialization
 
     public static List<Report> getReports(Path directory)
     {
-        File[] files = directory.toFile().listFiles((dir, name) -> name.endsWith(".json"));
+        File[] files = directory.toAbsolutePath().toFile().listFiles((dir, name) -> name.endsWith(".json"));
         if (files == null || files.length == 0)
         {
             return List.of();
@@ -90,7 +89,8 @@ public class Serialization
     public static List<Template> getTemplates(Path directory)
     {
         ProspectApplication.LOGGER.log(Level.INFO, "Loading templates from: " + directory.toAbsolutePath());
-        File[] files = directory.toFile().listFiles((dir, name) -> name.endsWith(".json"));
+        File[] files = directory.toAbsolutePath().toFile().listFiles((dir, name) -> name.endsWith(".json"));
+        ProspectApplication.LOGGER.log(Level.INFO, "Found " + (files == null ? 0 : files.length) + " template files.");
         if (files == null || files.length == 0)
         {
             return List.of();

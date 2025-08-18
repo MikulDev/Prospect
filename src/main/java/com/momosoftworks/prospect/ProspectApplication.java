@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ProspectApplication extends MobileApplication {
@@ -97,7 +98,8 @@ public class ProspectApplication extends MobileApplication {
     }
 
     private void createDirectoryIfNotExists(Path path) {
-        File dir = path.toFile();
+        File dir = path.toAbsolutePath().toFile();
+        LOGGER.log(Level.INFO, "Creating directory: " + dir.getAbsolutePath());
         if (!dir.exists()) {
             dir.mkdirs();
         }
