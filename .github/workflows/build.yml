@@ -8,6 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cleanup Gradle Cache
+        run: ./gradlew clean build --refresh-dependencies --rerun-tasks --stacktrace
+
       - name: Download and Setup GraalVM for Linux/Android
         run: |
           wget -q https://github.com/gluonhq/graal/releases/download/gluon-23%2B25.1-dev-2409082136/graalvm-java23-linux-amd64-gluon-23+25.1-dev.tar.gz
@@ -86,6 +89,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cleanup Gradle Cache
+        run: ./gradlew clean build --refresh-dependencies --rerun-tasks --stacktrace
 
       - name: Setup JDK 17
         uses: actions/setup-java@v4
