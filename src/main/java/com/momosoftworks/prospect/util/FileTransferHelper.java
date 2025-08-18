@@ -1,6 +1,7 @@
 package com.momosoftworks.prospect.util;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gluonhq.attach.util.Platform;
 import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.file_transfer.AdbFileTransfer;
 import com.momosoftworks.prospect.report.Report;
@@ -67,7 +68,9 @@ public class FileTransferHelper {
     private boolean hasProspectAppOnDevice(String deviceId) {
         try {
             // Check if the prospect app directory exists
-            return adbManager.pathExists(deviceId, ProspectApplication.getDataPath().toString());
+            System.out.println("Checking path " + getProspectAppPath());
+            System.out.println(adbManager.getFiles(deviceId, "/storage/"));
+            return adbManager.pathExists(deviceId, getProspectAppPath());
         } catch (Exception e) {
             ProspectApplication.LOGGER.log(Level.WARNING, "Failed to check for Prospect app on device: " + deviceId, e);
             return false;
@@ -77,8 +80,8 @@ public class FileTransferHelper {
     /**
      * Get the Prospect app directory path on mobile devices
      */
-    private String getProspectAppPath() {
-        return "/storage/emulated/0/Android/data/com.momosoftworks.prospect/files";
+    private String getProspectAppPath()
+    {   return ProspectApplication.windowsPathToAndroid(ProspectApplication.getDataPath(Platform.ANDROID));
     }
 
     /**

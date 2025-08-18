@@ -137,7 +137,7 @@ public class AdbFileTransfer
             }
             command.add("shell");
             command.add("find");
-            command.add("/sdcard/" + remotePath);
+            command.add(remotePath);
             command.add("-type");
             command.add("f");
             command.add("-name");
@@ -181,7 +181,7 @@ public class AdbFileTransfer
             command.add("shell");
             command.add("test");
             command.add("-d");
-            command.add("/sdcard/" + remotePath);
+            command.add(remotePath);
 
             ProcessBuilder pb = new ProcessBuilder(command);
             Process process = pb.start();
@@ -249,7 +249,7 @@ public class AdbFileTransfer
                 command.add(deviceId);
             }
             command.add("pull");
-            command.add("/sdcard/" + remoteFilePath);
+            command.add(remoteFilePath);
             command.add(localDestination.getAbsolutePath());
 
             ProcessBuilder pb = new ProcessBuilder(command);
@@ -283,7 +283,7 @@ public class AdbFileTransfer
             command.add("shell");
             command.add("mkdir");
             command.add("-p");
-            command.add("/sdcard/" + remotePath);
+            command.add(remotePath);
 
             ProcessBuilder pb = new ProcessBuilder(command);
             Process process = pb.start();
@@ -394,7 +394,7 @@ public class AdbFileTransfer
 
         @Override
         public String toString() {
-            return name + (size > 0 ? " (" + formatFileSize(size) + ")" : "");
+            return path + (size > 0 ? " (" + formatFileSize(size) + ")" : "");
         }
 
         private String formatFileSize(long bytes) {

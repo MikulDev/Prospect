@@ -4,6 +4,7 @@ import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.visual.Swatch;
 import com.momosoftworks.prospect.report.Registers;
+import com.momosoftworks.prospect.util.OSPath;
 import com.momosoftworks.prospect.window.MainWindow;
 import com.momosoftworks.prospect.window.ReportEditorWindow;
 import com.momosoftworks.prospect.window.TemplateEditorWindow;
@@ -14,6 +15,8 @@ import com.gluonhq.attach.util.Platform;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class ProspectApplication extends MobileApplication {
@@ -25,7 +28,7 @@ public class ProspectApplication extends MobileApplication {
     public static final String TEMPLATE_EDITOR_VIEW = "TemplateEditor";
     public static final String REPORT_VIEWER_VIEW = "ReportViewer";
 
-    private static Path DATA_PATH;
+    private static final Map<Platform, Path> DATA_PATHS = new HashMap<>();
 
     @Override
     public void init() {
@@ -81,13 +84,11 @@ public class ProspectApplication extends MobileApplication {
 
     private void initializeStoragePaths()
     {
-
-        DATA_PATH = switch (Platform.getCurrent())
-        {
-            case ANDROID -> Paths.get("/storage/emulated/0/Android/data/com.momosoftworks.prospect/files");
-            case DESKTOP -> Paths.get(System.getProperty("user.home"), "prospect");
-            case IOS -> throw new UnsupportedOperationException("iOS platform is not supported yet");
-        };
+        DATA_PATHS.putAll(Map.of(
+                Platform.ANDROID, Paths.get("/storage/emulated/0/Android/data/com.momosoftworks.prospect/files"),
+                Platform.DESKTOP, Paths.get(System.getProperty("user.home"), "prospect"),
+                Platform.IOS,     Paths.get(System.getProperty("user.home"), "prospect"))
+        );
 
         // Create subdirectories
         createDirectoryIfNotExists(getTemplatePath());
@@ -102,20 +103,28 @@ public class ProspectApplication extends MobileApplication {
         }
     }
 
+    public static String windowsPathToAndroid(Path path)
+    {   return path.toString().replace("\\", "/");
+    }
+
     public static Path getTemplatePath() {
-        return DATA_PATH.resolve("templates");
+        return getDataPath().resolve("templates");
     }
 
     public static Path getReportPath() {
-        return DATA_PATH.resolve("reports");
+        return getDataPath().resolve("reports");
     }
 
     public static Path getPdfPath() {
-        return DATA_PATH.resolve("exports");
+        return getDataPath().resolve("exports");
     }
 
     public static Path getDataPath() {
-        return DATA_PATH;
+        return DATA_PATHS.get(Platform.getCurrent());
+    }
+
+    public static Path getDataPath(Platform platform) {
+        return DATA_PATHS.get(platform);
     }
 
     public static void main(String[] args) {
