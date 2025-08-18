@@ -86,7 +86,7 @@ public class ProspectApplication extends MobileApplication {
     private void initializeStoragePaths()
     {
         DATA_PATHS.putAll(Map.of(
-                Platform.ANDROID, StorageService.create().get().getPrivateStorage().get().toPath(),
+                Platform.ANDROID, StorageService.create().get().getPublicStorage("").get().toPath(),
                 Platform.DESKTOP, Paths.get(System.getProperty("user.home"), "prospect"),
                 Platform.IOS, Paths.get(System.getProperty("user.home"), "prospect"))
         );
