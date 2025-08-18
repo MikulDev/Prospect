@@ -28,7 +28,7 @@ public interface MTPHandler
     private static MTPHandler constructHandler(String system)
     {
         try
-        {   return Class.forName(String.format("com.momosoftworks.prospect.file_transfer.%sMTPHandler", system) + system).asSubclass(MTPHandler.class).getDeclaredConstructor().newInstance();
+        {   return Class.forName(String.format("com.momosoftworks.prospect.file_transfer.%sMTPHandler", system)).asSubclass(MTPHandler.class).getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
         {   throw new RuntimeException("Failed to create MTP handler: " + system, e);

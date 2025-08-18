@@ -12,14 +12,6 @@ repositories {
 
 apply from: 'dependencies.gradle'
 
-boolean isDevelopment = System.getProperty("env", "development") != "production";
-
-dependencies {
-    if (isDevelopment)
-    {   implementation files('lib/windows/MtpJava-1.0-SNAPSHOT.jar')
-    }
-}
-
 javafx {
     version = '21'
     modules = [ 'javafx.controls', 'javafx.fxml' ]
