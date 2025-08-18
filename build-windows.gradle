@@ -29,7 +29,7 @@ java {
 
 sourceSets {
     main {
-        java.srcDirs = ['src/main/java', 'src/windows/java']
+        java.srcDirs = ['src/main/java', 'src/win/java']
     }
 }
 

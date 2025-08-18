@@ -33,11 +33,7 @@ java {
 
 sourceSets {
     main {
-        if (isDevelopment)
-            java.srcDirs = ['src/main/java', 'src/windows/java']
-        else {
-            java.srcDirs = ['src/main/java']
-        }
+        java.srcDirs = ['src/main/java']
     }
 }
 
