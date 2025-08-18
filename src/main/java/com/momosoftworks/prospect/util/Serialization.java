@@ -3,6 +3,7 @@ package com.momosoftworks.prospect.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.momosoftworks.prospect.ProspectApplication;
 import com.momosoftworks.prospect.report.Report;
 import com.momosoftworks.prospect.report.template.Template;
 
@@ -10,6 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 public class Serialization
@@ -87,6 +89,7 @@ public class Serialization
 
     public static List<Template> getTemplates(Path directory)
     {
+        ProspectApplication.LOGGER.log(Level.INFO, "Loading templates from: " + directory.toAbsolutePath());
         File[] files = directory.toFile().listFiles((dir, name) -> name.endsWith(".json"));
         if (files == null || files.length == 0)
         {

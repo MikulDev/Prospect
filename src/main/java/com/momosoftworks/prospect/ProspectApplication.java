@@ -1,6 +1,5 @@
 package com.momosoftworks.prospect;
 
-import com.gluonhq.attach.storage.StorageService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.visual.Swatch;
@@ -86,9 +85,9 @@ public class ProspectApplication extends MobileApplication {
     private void initializeStoragePaths()
     {
         DATA_PATHS.putAll(Map.of(
-                Platform.ANDROID, StorageService.create().get().getPublicStorage("").get().toPath(),
+                Platform.ANDROID, Paths.get("/storage/emulated/0/Android/data/com.momosoftworks.prospect/files"),
                 Platform.DESKTOP, Paths.get(System.getProperty("user.home"), "prospect"),
-                Platform.IOS, Paths.get(System.getProperty("user.home"), "prospect"))
+                Platform.IOS,     Paths.get(System.getProperty("user.home"), "prospect"))
         );
 
         // Create subdirectories

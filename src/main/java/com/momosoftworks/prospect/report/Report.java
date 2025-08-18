@@ -81,7 +81,11 @@ public class Report
     }
 
     public String getFileName()
-    {   return fileName;
+    {
+        if (this.fileName.contains("."))
+        {   return this.fileName = this.fileName.substring(0, this.fileName.lastIndexOf('.'));
+        }
+        return fileName;
     }
     public void setFileName(String fileName)
     {

@@ -134,26 +134,18 @@ public class FileTransferHelper {
             String fileName = deviceFilePath.substring(deviceFilePath.lastIndexOf("/") + 1);
             File targetFile = targetPath.resolve(fileName).toFile();
 
-            // Create a temporary file to receive the data
-            File tempFile = File.createTempFile("prospect_import", ".json");
-
             try {
                 // Pull the file from device to temp location
-                File downloadedFile = adbManager.readFile(deviceId, deviceFilePath.replace("/sdcard/", ""), tempFile);
+                File downloadedFile = adbManager.readFile(deviceId, deviceFilePath.replace("/sdcard/", ""), targetFile);
 
                 if (downloadedFile != null && downloadedFile.exists()) {
                     // Copy from temp to final location
                     Files.copy(downloadedFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    downloadedFile.renameTo(targetFile);
                 } else {
                     throw new FileTransferException("Failed to download file from device");
                 }
 
             } finally {
-                // Clean up temp file
-                if (tempFile.exists()) {
-                    tempFile.delete();
-                }
             }
 
         } catch (Exception e) {
@@ -168,23 +160,18 @@ public class FileTransferHelper {
         try {
             String deviceId = extractDeviceId(deviceDisplayName);
             // Serialize the report to a temporary file
-            File tempFile = createTempReportFile(report);
-            tempFile.renameTo(new File(tempFile.getParent() + report.getFileName() + ".json"));
+            File reportFile = getReportFile(report);
 
             try {
                 // Send to device
                 String devicePath = getProspectAppPath() + "/reports";
-                boolean success = adbManager.writeFile(deviceId, devicePath, tempFile);
+                boolean success = adbManager.writeFile(deviceId, devicePath, reportFile);
 
                 if (!success) {
                     throw new FileTransferException("Failed to write report file to device");
                 }
 
             } finally {
-                // Clean up temp file
-                if (tempFile.exists()) {
-                    tempFile.delete();
-                }
             }
 
         } catch (Exception e) {
@@ -199,22 +186,18 @@ public class FileTransferHelper {
         try {
             String deviceId = extractDeviceId(deviceDisplayName);
             // Serialize the template to a temporary file
-            File tempFile = createTempTemplateFile(template);
+            File templateFile = getTemplateFile(template);
 
             try {
                 // Send to device
                 String devicePath = getProspectAppPath() + "/templates";
-                boolean success = adbManager.writeFile(deviceId, devicePath, tempFile);
+                boolean success = adbManager.writeFile(deviceId, devicePath, templateFile);
 
                 if (!success) {
                     throw new FileTransferException("Failed to write template file to device");
                 }
 
             } finally {
-                // Clean up temp file
-                if (tempFile.exists()) {
-                    tempFile.delete();
-                }
             }
 
         } catch (Exception e) {
@@ -243,29 +226,23 @@ public class FileTransferHelper {
     /**
      * Create a temporary file for a report
      */
-    private File createTempReportFile(Report report) throws IOException {
-        File tempFile = File.createTempFile("prospect_report", ".json");
-
-        // Serialize the report to JSON and write to temp file
-        ObjectNode reportJson = report.serialize();
-        if (!Serialization.writeJsonFile(reportJson, tempFile.toPath())) {
-            throw new IOException("Failed to serialize report to temporary file");
+    private File getReportFile(Report report) {
+        File reportFile = new File(ProspectApplication.getReportPath().toFile(), report.getFileName() + ".json");
+        if (!reportFile.exists()) {
+            report.save();
         }
-        return tempFile;
+        return reportFile;
     }
 
     /**
      * Create a temporary file for a template
      */
-    private File createTempTemplateFile(Template template) throws IOException {
-        File tempFile = File.createTempFile("prospect_template", ".json");
-
-        // Serialize the template to JSON and write to temp file
-        ObjectNode templateJson = template.serialize();
-        if (!Serialization.writeJsonFile(templateJson, tempFile.toPath())) {
-            throw new IOException("Failed to serialize template to temporary file");
+    private File getTemplateFile(Template template) {
+        File templateFile = new File(ProspectApplication.getTemplatePath().toFile(), template.getFileName() + ".json");
+        if (!templateFile.exists()) {
+            template.save();
         }
-        return tempFile;
+        return templateFile;
     }
 
     /**

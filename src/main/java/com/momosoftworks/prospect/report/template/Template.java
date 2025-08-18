@@ -69,10 +69,20 @@ public class Template
     }
 
     public String getFileName()
-    {   return fileName;
+    {
+        if (this.fileName.contains("."))
+        {   return this.fileName = this.fileName.substring(0, this.fileName.lastIndexOf('.'));
+        }
+        return fileName;
     }
     public void setFileName(String fileName)
-    {   this.fileName = fileName;
+    {
+        if (fileName != null && fileName.contains("."))
+        {   this.fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        }
+        else
+        {   this.fileName = fileName;
+        }
     }
 
     public ObjectNode serialize()
