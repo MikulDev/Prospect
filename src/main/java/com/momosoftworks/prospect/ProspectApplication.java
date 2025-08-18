@@ -95,6 +95,8 @@ public class ProspectApplication extends MobileApplication {
         createDirectoryIfNotExists(getTemplatePath());
         createDirectoryIfNotExists(getReportPath());
         createDirectoryIfNotExists(getPdfPath());
+        if (Platform.isAndroid()) Path.of("reports").toFile().mkdirs();
+        if (Platform.isAndroid()) Path.of("test_path").toFile().mkdirs();
     }
 
     private void createDirectoryIfNotExists(Path path) {
