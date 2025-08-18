@@ -46,7 +46,8 @@ gluonfx {
             "com.momosoftworks.prospect.report.Report",
             "com.momosoftworks.prospect.report.template.Template",
             "com.momosoftworks.prospect.report.element.TextFieldElement",
-            "com.momosoftworks.prospect.report.template.element.TextFieldTemplate"
+            "com.momosoftworks.prospect.report.template.element.TextFieldTemplate",
+            "file_transfer.WindowsMTPHandler"
     ]
 
     bundlesList = ["com.momosoftworks.prospect.resources.prospect", "fontmanager"]
