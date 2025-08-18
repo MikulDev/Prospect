@@ -14,6 +14,7 @@ apply from: 'dependencies.gradle'
 
 dependencies {
     implementation files('lib/windows/MtpJava-1.0-SNAPSHOT.jar')
+    nativeImplementation files('lib/windows/MtpJava-1.0-SNAPSHOT.jar')
 }
 
 javafx {
@@ -42,12 +43,20 @@ gluonfx {
         services 'display', 'lifecycle', 'statusbar', 'storage', 'pictures'
     }
 
+    resourcesList = [
+            "com/github/hms11rn/mtp/.*"
+    ]
+
     reflectionList = [
             "com.momosoftworks.prospect.report.Report",
             "com.momosoftworks.prospect.report.template.Template",
             "com.momosoftworks.prospect.report.element.TextFieldElement",
             "com.momosoftworks.prospect.report.template.element.TextFieldTemplate",
-            "file_transfer.WindowsMTPHandler"
+            "file_transfer.WindowsMTPHandler",
+            "com.github.hms11rn.mtp.PortableDeviceManager",
+            "com.github.hms11rn.mtp.PortableDevice",
+            "com.github.hms11rn.mtp.content.PortableDeviceContainerObject",
+            "com.github.hms11rn.mtp.content.PortableDeviceObject"
     ]
 
     bundlesList = ["com.momosoftworks.prospect.resources.prospect", "fontmanager"]
