@@ -16,7 +16,7 @@ public interface MTPHandler
     static MTPHandler getHandler()
     {
         if (System.getProperty("os.name").toLowerCase().contains("win"))
-        {   return constructHandler("Windows");
+        {   return constructHandler("file_transfer.WindowsMTPHandler");
         }
         else if (System.getProperty("os.name").toLowerCase().contains("linux"))
         {   ProspectApplication.LOGGER.log(Level.WARNING, "Linux MTP handling is not implemented yet.");
@@ -25,13 +25,14 @@ public interface MTPHandler
         else throw new RuntimeException("Unsupported platform for MTP handling: " + System.getProperty("os.name"));
     }
 
-    private static MTPHandler constructHandler(String system)
+    private static MTPHandler constructHandler(String path)
     {
         try
-        {   return Class.forName(String.format("com.momosoftworks.prospect.file_transfer.%sMTPHandler", system)).asSubclass(MTPHandler.class).getDeclaredConstructor().newInstance();
+        {   return Class.forName(path).asSubclass(MTPHandler.class).getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
-        {   throw new RuntimeException("Failed to create MTP handler: " + system, e);
+        {   String handlerName = path.substring(path.lastIndexOf('.') + 1);
+            throw new RuntimeException("Failed to create MTP handler: " + handlerName, e);
         }
     }
 }
