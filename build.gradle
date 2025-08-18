@@ -12,8 +12,10 @@ repositories {
 
 apply from: 'dependencies.gradle'
 
+boolean isDevelopment = System.getProperty("env", "development") != "production";
+
 dependencies {
-    if (System.getProperty("env", "development") != "production")
+    if (isDevelopment)
     {   implementation files('lib/windows/MtpJava-1.0-SNAPSHOT.jar')
     }
 }
@@ -26,6 +28,16 @@ javafx {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+sourceSets {
+    main {
+        if (isDevelopment)
+            java.srcDirs = ['src/main/java', 'src/windows/java']
+        else {
+            java.srcDirs = ['src/main/java']
+        }
     }
 }
 
