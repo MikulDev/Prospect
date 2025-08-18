@@ -124,7 +124,7 @@ public class Template
         {   file += ".json";
         }
         Path path = ProspectApplication.getTemplatePath().resolve(file);
-        ProspectApplication.LOGGER.log(Level.INFO, "Saving template to: " + path);
+        ProspectApplication.LOGGER.log(Level.INFO, "Saving template to: " + path.toAbsolutePath());
         Serialization.writeJsonFile(this.serialize(), path);
     }
 }

@@ -29,6 +29,7 @@ import com.gluonhq.attach.util.Platform;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -621,7 +622,13 @@ public class MainWindow {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             reports.remove(report);
-            // TODO: Delete from filesystem
+            try
+            {   Files.delete(ProspectApplication.getReportPath().resolve(report.getFileName()));
+                showInfoAlert("Report Deleted", "The report has been successfully deleted.");
+            }
+            catch (Exception e)
+            {   showErrorAlert("Failed to delete template file: " + e.getMessage());
+            }
         }
     }
 
@@ -634,7 +641,13 @@ public class MainWindow {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             templates.remove(template);
-            // TODO: Delete from filesystem
+            try
+            {   Files.delete(ProspectApplication.getTemplatePath().resolve(template.getFileName()));
+                showInfoAlert("Report Deleted", "The template has been successfully deleted.");
+            }
+            catch (Exception e)
+            {   showErrorAlert("Failed to delete template file: " + e.getMessage());
+            }
         }
     }
 

@@ -68,8 +68,6 @@ public class FileTransferHelper {
     private boolean hasProspectAppOnDevice(String deviceId) {
         try {
             // Check if the prospect app directory exists
-            System.out.println("Checking path " + getProspectAppPath());
-            System.out.println(adbManager.getFiles(deviceId, "/storage/"));
             return adbManager.pathExists(deviceId, getProspectAppPath());
         } catch (Exception e) {
             ProspectApplication.LOGGER.log(Level.WARNING, "Failed to check for Prospect app on device: " + deviceId, e);
@@ -146,6 +144,7 @@ public class FileTransferHelper {
                 if (downloadedFile != null && downloadedFile.exists()) {
                     // Copy from temp to final location
                     Files.copy(downloadedFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    downloadedFile.renameTo(targetFile);
                 } else {
                     throw new FileTransferException("Failed to download file from device");
                 }
@@ -170,6 +169,7 @@ public class FileTransferHelper {
             String deviceId = extractDeviceId(deviceDisplayName);
             // Serialize the report to a temporary file
             File tempFile = createTempReportFile(report);
+            tempFile.renameTo(new File(tempFile.getParent() + report.getFileName() + ".json"));
 
             try {
                 // Send to device
