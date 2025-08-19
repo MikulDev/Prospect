@@ -63,22 +63,14 @@ public class ProspectApplication extends MobileApplication {
 
         if (Platform.isAndroid())
         {
-            Services.get(StorageService.class).ifPresent(storage ->
+            Services.get(StorageService.class).ifPresentOrElse(storage ->
             {
-
+                LOGGER.log(Level.INFO, "External storage read/write: " + storage.isExternalStorageReadable() + ", " + storage.isExternalStorageWritable());
+                LOGGER.log(Level.INFO, "External storage path: " + storage.getPublicStorage("").map(File::getAbsolutePath));
+                LOGGER.log(Level.INFO, "Internal storage path: " + storage.getPrivateStorage().map(File::getAbsolutePath));
+            }, () -> {
+                LOGGER.log(Level.WARNING, "StorageService not available");
             });
-            // Print the contents of the AndroidManifest.xml file at "src/android/AndroidManifest.xml"
-            try (InputStream manifestStream = getClass().getResourceAsStream("/android/AndroidManifest.xml")) {
-                if (manifestStream != null) {
-                    String manifestContent = new String(manifestStream.readAllBytes());
-                    LOGGER.log(Level.INFO, "AndroidManifest.xml content:\n" + manifestContent);
-                } else {
-                    LOGGER.log(Level.WARNING, "AndroidManifest.xml not found in resources");
-                }
-            }
-            catch (Exception e)
-            {   LOGGER.log(Level.SEVERE, "Failed to read AndroidManifest.xml", e);
-            }
         }
     }
 
