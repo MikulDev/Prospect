@@ -56,7 +56,6 @@ ext {
 
     namespace = 'com.momosoftworks.prospect'
 
-    // Permissions for camera and storage support
     permissions = [
             'android.permission.CAMERA',
             'android.permission.WRITE_EXTERNAL_STORAGE',

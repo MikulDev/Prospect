@@ -45,13 +45,10 @@ public class FileTransferHelper {
             List<String> prospectDevices = new ArrayList<>();
 
             for (String deviceId : allDevices) {
-                if (hasProspectAppOnDevice(deviceId))
-                {
-                    // Get a friendly name for the device
-                    String deviceInfo = adbManager.getDeviceInfo(deviceId);
-                    String displayName = deviceInfo.isEmpty() ? deviceId : deviceInfo + " (" + deviceId + ")";
-                    prospectDevices.add(displayName);
-                }
+                // Get a friendly name for the device
+                String deviceInfo = adbManager.getDeviceInfo(deviceId);
+                String displayName = deviceInfo.isEmpty() ? deviceId : deviceInfo + " (" + deviceId + ")";
+                prospectDevices.add(displayName);
             }
 
             return prospectDevices;

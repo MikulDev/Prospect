@@ -1,5 +1,7 @@
 package com.momosoftworks.prospect;
 
+import com.gluonhq.attach.storage.StorageService;
+import com.gluonhq.attach.util.Services;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.visual.Swatch;
@@ -13,6 +15,9 @@ import javafx.stage.Stage;
 import com.gluonhq.attach.util.Platform;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -56,10 +61,25 @@ public class ProspectApplication extends MobileApplication {
             return new TemplateEditorWindow();
         });
 
-        /*appManager.addViewFactory(REPORT_VIEWER_VIEW, () -> {
-            ReportViewerView view = new ReportViewerView();
-            return (View) view.getView();
-        });*/
+        if (Platform.isAndroid())
+        {
+            Services.get(StorageService.class).ifPresent(storage ->
+            {
+
+            });
+            // Print the contents of the AndroidManifest.xml file at "src/android/AndroidManifest.xml"
+            try (InputStream manifestStream = getClass().getResourceAsStream("/android/AndroidManifest.xml")) {
+                if (manifestStream != null) {
+                    String manifestContent = new String(manifestStream.readAllBytes());
+                    LOGGER.log(Level.INFO, "AndroidManifest.xml content:\n" + manifestContent);
+                } else {
+                    LOGGER.log(Level.WARNING, "AndroidManifest.xml not found in resources");
+                }
+            }
+            catch (Exception e)
+            {   LOGGER.log(Level.SEVERE, "Failed to read AndroidManifest.xml", e);
+            }
+        }
     }
 
     @Override
@@ -83,20 +103,64 @@ public class ProspectApplication extends MobileApplication {
         AppManager.getInstance().switchView(MAIN_VIEW);
     }
 
-    private void initializeStoragePaths()
-    {
+    private void initializeStoragePaths() {
+        // Initialize platform-specific paths
         DATA_PATHS.putAll(Map.of(
                 Platform.ANDROID, Paths.get("/storage/emulated/0/Android/data/com.momosoftworks.prospect/files"),
                 Platform.DESKTOP, Paths.get(System.getProperty("user.home"), "prospect"),
                 Platform.IOS,     Paths.get(System.getProperty("user.home"), "prospect"))
         );
 
-        // Create subdirectories
-        createDirectoryIfNotExists(getTemplatePath());
-        createDirectoryIfNotExists(getReportPath());
-        createDirectoryIfNotExists(getPdfPath());
-        if (Platform.isAndroid()) Path.of("reports").toFile().mkdirs();
-        if (Platform.isAndroid()) Path.of("test_path").toFile().mkdirs();
+        // Log the selected path
+        Path selectedPath = getDataPath();
+        LOGGER.log(Level.INFO, "Initializing storage at: " + selectedPath.toAbsolutePath());
+
+        // Create subdirectories with robust error handling
+        boolean storageInitialized = createDirectoriesWithRetry();
+
+        if (!storageInitialized) {
+            LOGGER.log(Level.WARNING, "Initial directory creation failed, will retry on first file save");
+        }
+    }
+
+    /**
+     * Create directories with retry logic and fallback strategies
+     */
+    private boolean createDirectoriesWithRetry() {
+        String[] subdirectories = {"templates", "reports", "exports"};
+        int maxRetries = 3;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            LOGGER.log(Level.INFO, "Directory creation attempt " + attempt + " of " + maxRetries);
+
+            boolean allCreated = true;
+            for (String subdir : subdirectories) {
+                File dirPath = getDataPath().resolve(subdir).toFile();
+                if (!dirPath.exists()) {
+                    allCreated = false;
+                    dirPath.mkdirs();
+                }
+            }
+
+            if (allCreated) {
+                LOGGER.log(Level.INFO, "All directories created successfully on attempt " + attempt);
+                return true;
+            }
+
+            // Wait before retry (except on last attempt)
+            if (attempt < maxRetries) {
+                try {
+                    Thread.sleep(500); // Wait 500ms before retry
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+
+        // If we get here, all retries failed
+        LOGGER.log(Level.WARNING, "Failed to create directories after " + maxRetries + " attempts");
+        return false;
     }
 
     private void createDirectoryIfNotExists(Path path) {
