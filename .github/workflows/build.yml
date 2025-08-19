@@ -62,6 +62,25 @@ jobs:
           build-tools: 35.0.0
           ndk: 23.1.7779620
 
+      - name: Generate Android Manifest and Sources
+        run: |
+          unset ANDROID_SDK_ROOT
+          export ANDROID_HOME="${{ steps.setup-android.outputs.sdk-path }}"
+          ./gradlew -Denv=production nativeCompile -Ptarget=android --stacktrace
+        env:
+          ANDROID_HOME: ${{ steps.setup-android.outputs.sdk-path }}
+        continue-on-error: true
+
+      - name: Upload Generated AndroidManifest.xml
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-android-manifest
+          path: |
+            build/gluonfx/aarch64-android/gensrc/android/AndroidManifest.xml
+            target/gluonfx/aarch64-android/gensrc/android/AndroidManifest.xml
+          retention-days: 30
+          if-no-files-found: ignore
+
       - name: Build Android APK
         run: |
           unset ANDROID_SDK_ROOT
